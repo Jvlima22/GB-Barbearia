@@ -41,14 +41,14 @@ const Search = () => {
                 <Input
                   placeholder="Faça sua busca..."
                   {...field}
-                  className="w-full"
+                  className="h-10 w-full lg:h-[40px] lg:w-[354.4px]" // Aplica largura e altura no desktop
                 />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit">
+        <Button type="submit" className="lg:mr-[800px]">
           <SearchIcon />
         </Button>
       </form>

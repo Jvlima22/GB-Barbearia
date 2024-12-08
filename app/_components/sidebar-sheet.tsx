@@ -1,15 +1,13 @@
 "use client"
 
 import { Button } from "./ui/button"
-import { CalendarIcon, HomeIcon, LogInIcon, LogOutIcon } from "lucide-react"
+import { CalendarIcon, HomeIcon, LogOutIcon } from "lucide-react"
 import { SheetClose, SheetContent, SheetHeader, SheetTitle } from "./ui/sheet"
 import { quickSearchOptions } from "../_constants/search"
 import Link from "next/link"
 import Image from "next/image"
-import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog"
 import { signOut, useSession } from "next-auth/react"
-import { Avatar, AvatarImage } from "./ui/avatar"
-import SignInDialog from "./sign-in-dialog"
+import UserIcon from "./user-icon"
 
 const SidebarSheet = () => {
   const { data } = useSession()
@@ -21,34 +19,7 @@ const SidebarSheet = () => {
         <SheetTitle className="text-left">Menu</SheetTitle>
       </SheetHeader>
 
-      <div className="flex items-center justify-between gap-3 border-b border-solid py-5">
-        {data?.user ? (
-          <div className="flex items-center gap-2">
-            <Avatar>
-              <AvatarImage src={data?.user?.image ?? ""} />
-            </Avatar>
-
-            <div>
-              <p className="font-bold">{data.user.name}</p>
-              <p className="text-xs">{data.user.email}</p>
-            </div>
-          </div>
-        ) : (
-          <>
-            <h2 className="font-bold">Olá, faça seu login!</h2>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button size="icon">
-                  <LogInIcon />
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="w-[90%]">
-                <SignInDialog />
-              </DialogContent>
-            </Dialog>
-          </>
-        )}
-      </div>
+      <UserIcon />
 
       <div className="flex flex-col gap-2 border-b border-solid py-5">
         <SheetClose asChild>

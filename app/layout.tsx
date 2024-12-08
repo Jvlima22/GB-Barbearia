@@ -18,7 +18,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="pt-br" className="dark">
       <body className={inter.className}>
         <AuthProvider>
           <div className="flex h-full flex-col">
