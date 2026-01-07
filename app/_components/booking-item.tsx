@@ -36,11 +36,7 @@ import BookingSummary from "./booking-summary"
 interface BookingItemProps {
   booking: Prisma.BookingGetPayload<{
     include: {
-      service: {
-        include: {
-          barbershop: true
-        }
-      }
+      service: true
     }
   }>
 }
@@ -48,9 +44,13 @@ interface BookingItemProps {
 // TODO: receber agendamento como prop
 const BookingItem = ({ booking }: BookingItemProps) => {
   const [isSheetOpen, setIsSheetOpen] = useState(false)
-  const {
-    service: { barbershop },
-  } = booking
+  // Since there's no barbershop relation in the schema, we'll create a mock barbershop
+  const barbershop = {
+    name: "GB Barbearia",
+    address: "Rua das Doninhas, 253 - Cotia, SP",
+    imageUrl: "/Logo-GB.jpeg",
+    phones: ["(11) 99999-9999"],
+  }
   const isConfirmed = isFuture(booking.date)
   const handleCancelBooking = async () => {
     try {
@@ -67,62 +67,66 @@ const BookingItem = ({ booking }: BookingItemProps) => {
   }
   return (
     <Sheet open={isSheetOpen} onOpenChange={handleSheetOpenChange}>
-      <SheetTrigger className="w-full min-w-[90%]">
+      <SheetTrigger className="w-full min-w-[90%] rounded-xl border-white bg-[#3EABFD]">
         <Card className="min-w-[90%]">
           <CardContent className="flex justify-between p-0">
             {/* ESQUERDA */}
             <div className="flex flex-col gap-2 py-5 pl-5">
               <Badge
-                className="w-fit"
+                className="w-fit text-white"
                 variant={isConfirmed ? "default" : "secondary"}
               >
                 {isConfirmed ? "Confirmado" : "Finalizado"}
               </Badge>
-              <h3 className="font-semibold">{booking.service.name}</h3>
+              <h3 className="font-semibold text-white">
+                {booking.service.name}
+              </h3>
 
               <div className="flex items-center gap-2">
                 <Avatar className="h-6 w-6">
-                  <AvatarImage src={booking.service.barbershop.imageUrl} />
+                  <AvatarImage src={barbershop.imageUrl} />
                 </Avatar>
-                <p className="text-sm">{booking.service.barbershop.name}</p>
+                <p className="text-sm text-white">{barbershop.name}</p>
               </div>
             </div>
             {/* DIREITA */}
             <div className="flex flex-col items-center justify-center border-l-2 border-solid px-5">
-              <p className="text-sm capitalize">
+              <p className="text-sm capitalize text-white">
                 {format(booking.date, "MMMM", { locale: ptBR })}
               </p>
-              <p className="text-2xl">
+              <p className="text-2xl text-white">
                 {format(booking.date, "dd", { locale: ptBR })}
               </p>
-              <p className="text-sm">
+              <p className="text-sm text-white">
                 {format(booking.date, "HH:mm", { locale: ptBR })}
               </p>
             </div>
           </CardContent>
         </Card>
       </SheetTrigger>
-      <SheetContent className="w-[85%]">
+      <SheetContent className="w-[85%] bg-[#121212] sm:w-[400px]">
         <SheetHeader>
-          <SheetTitle className="text-left">Informações da Reserva</SheetTitle>
+          <SheetTitle className="text-left text-white">
+            Informações da Reserva
+          </SheetTitle>
         </SheetHeader>
 
         <div className="relative mt-6 flex h-[180px] w-full items-end">
           <Image
-            alt={`Mapa da barbearia ${booking.service.barbershop.name}`}
+            alt={`Mapa da barbearia ${barbershop.name}`}
             src="/map.svg"
             fill
             className="rounded-xl object-cover"
           />
 
           <Card className="z-50 mx-5 mb-3 w-full rounded-xl">
-            <CardContent className="flex items-center gap-3 px-5 py-3">
+            <CardContent className="flex items-center gap-3 rounded-xl border border-white px-5 py-3">
               <Avatar>
                 <AvatarImage src={barbershop.imageUrl} />
               </Avatar>
               <div>
-                <h3 className="font-bold">{barbershop.name}</h3>
-                <p className="text-xs">{barbershop.address}</p>
+                <h3 className="font-bold text-white">{barbershop.name}</h3>
+                <p className="text-xs text-white">{barbershop.address}</p>
               </div>
             </CardContent>
           </Card>
@@ -130,13 +134,13 @@ const BookingItem = ({ booking }: BookingItemProps) => {
 
         <div className="mt-6">
           <Badge
-            className="w-fit"
+            className="w-fit text-white"
             variant={isConfirmed ? "default" : "secondary"}
           >
             {isConfirmed ? "Confirmado" : "Finalizado"}
           </Badge>
 
-          <div className="mb-3 mt-6">
+          <div className="mb-3 mt-6 text-white">
             <BookingSummary
               barbershop={barbershop}
               service={booking.service}
@@ -144,7 +148,7 @@ const BookingItem = ({ booking }: BookingItemProps) => {
             />
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-3 text-white">
             {barbershop.phones.map((phone, index) => (
               <PhoneItem key={index} phone={phone} />
             ))}
@@ -153,18 +157,18 @@ const BookingItem = ({ booking }: BookingItemProps) => {
         <SheetFooter className="mt-6">
           <div className="flex items-center gap-3">
             <SheetClose asChild>
-              <Button variant="outline" className="w-full">
+              <Button className="w-full rounded-xl border border-white text-white">
                 Voltar
               </Button>
             </SheetClose>
             {isConfirmed && (
               <Dialog>
-                <DialogTrigger className="w-full">
-                  <Button variant="destructive" className="w-full">
+                <DialogTrigger className="w-full rounded-xl border border-red-500">
+                  <Button variant="destructive" className="w-full text-white">
                     Cancelar Reserva
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="w-[90%]">
+                <DialogContent className="w-[90%] bg-[#1D1D1D] text-white">
                   <DialogHeader>
                     <DialogTitle>Você deseja cancelar sua reserva?</DialogTitle>
                     <DialogDescription>
@@ -174,15 +178,14 @@ const BookingItem = ({ booking }: BookingItemProps) => {
                   </DialogHeader>
                   <DialogFooter className="flex flex-row gap-3">
                     <DialogClose asChild>
-                      <Button variant="secondary" className="w-full">
+                      <Button variant="outline" className="w-full rounded-xl">
                         Voltar
                       </Button>
                     </DialogClose>
-                    <DialogClose className="w-full">
+                    <DialogClose className="w-full rounded-xl">
                       <Button
-                        variant="destructive"
                         onClick={handleCancelBooking}
-                        className="w-full"
+                        className="w-full rounded-xl border border-red-500 bg-red-500 text-white"
                       >
                         Confirmar
                       </Button>

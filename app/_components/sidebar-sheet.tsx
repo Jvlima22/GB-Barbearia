@@ -14,34 +14,45 @@ const SidebarSheet = () => {
   const handleLogoutClick = () => signOut()
 
   return (
-    <SheetContent className="overflow-y-auto">
+    <SheetContent className="overflow-y-auto bg-[#1D1D1D] p-6">
       <SheetHeader>
-        <SheetTitle className="text-left">Menu</SheetTitle>
+        <SheetTitle className="text-left text-white">Menu</SheetTitle>
       </SheetHeader>
 
       <UserIcon />
 
       <div className="flex flex-col gap-2 border-b border-solid py-5">
         <SheetClose asChild>
-          <Button className="justify-start gap-2" variant="ghost" asChild>
-            <Link href="/">
-              <HomeIcon size={18} />
+          <Button className="justify-start gap-2" asChild>
+            <Link href="/" className="text-white">
+              <HomeIcon size={18} color="#FFFFFF" />
               Início
             </Link>
           </Button>
         </SheetClose>
-        <Button className="justify-start gap-2" variant="ghost" asChild>
-          <Link href="/bookings">
-            <CalendarIcon size={18} />
+        <Button className="justify-start gap-2" asChild>
+          <Link href="/bookings" className="text-white">
+            <CalendarIcon size={18} color="#FFFFFF" />
             Agendamentos
           </Link>
         </Button>
+
+        {(data?.user as any)?.role === "ADMIN" && (
+          <Button className="justify-start gap-2" asChild>
+            <Link href="/admin" className="text-white">
+              <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-primary text-[10px] text-white">
+                A
+              </div>
+              Painel Administrativo
+            </Link>
+          </Button>
+        )}
       </div>
 
       <div className="flex flex-col gap-2 border-b border-solid py-5">
         {quickSearchOptions.map((option) => (
-          <SheetClose key={option.title} asChild>
-            <Button className="justify-start gap-2" variant="ghost" asChild>
+          <SheetClose className="text-white" key={option.title} asChild>
+            <Button className="justify-start gap-2" asChild>
               <Link href={`/barbershops?service=${option.title}`}>
                 <Image
                   alt={option.title}
@@ -59,11 +70,10 @@ const SidebarSheet = () => {
       {data?.user && (
         <div className="flex flex-col gap-2 py-5">
           <Button
-            variant="ghost"
-            className="justify-start gap-2"
+            className="justify-start gap-2 text-white"
             onClick={handleLogoutClick}
           >
-            <LogOutIcon size={18} />
+            <LogOutIcon size={18} color="#FFFFFF" />
             Sair da conta
           </Button>
         </div>

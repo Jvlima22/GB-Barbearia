@@ -1,4 +1,3 @@
-import { Barbershop } from "@prisma/client"
 import { Card, CardContent } from "./ui/card"
 import Image from "next/image"
 import { Button } from "./ui/button"
@@ -7,7 +6,12 @@ import { StarIcon } from "lucide-react"
 import Link from "next/link"
 
 interface BarbershopItemProps {
-  barbershop: Barbershop
+  barbershop: {
+    id: string
+    name: string
+    address: string
+    imageUrl: string
+  }
 }
 
 const BarbershopItem = ({ barbershop }: BarbershopItemProps) => {
@@ -27,17 +31,24 @@ const BarbershopItem = ({ barbershop }: BarbershopItemProps) => {
             className="absolute left-2 top-2 space-x-1"
             variant="secondary"
           >
-            <StarIcon size={12} className="fill-primary text-primary" />
-            <p className="text-xs font-semibold">5,0</p>
+            <StarIcon size={12} className="fill-[#3EABFD] text-[#3EABFD]" />
+            <p className="text-xs font-semibold text-white">5,0</p>
           </Badge>
         </div>
 
         {/* TEXTO */}
         <div className="px-1 py-3">
-          <h3 className="truncate font-semibold">{barbershop.name}</h3>
+          <h3 className="truncate font-semibold text-white">
+            {barbershop.name}
+          </h3>
           <p className="truncate text-sm text-gray-400">{barbershop.address}</p>
-          <Button variant="secondary" className="mt-3 w-full" asChild>
-            <Link href={`/barbershops/${barbershop.id}`}>Reservar</Link>
+          <Button
+            className="mt-3 w-full rounded-xl bg-[#3EABFD] hover:bg-[#102332]"
+            asChild
+          >
+            <Link href={`/barbershops/${barbershop.id}`} className="text-white">
+              Reservar
+            </Link>
           </Button>
         </div>
       </CardContent>

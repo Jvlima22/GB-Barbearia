@@ -1,11 +1,13 @@
 import { format } from "date-fns"
 import { Card, CardContent } from "./ui/card"
-import { Barbershop, BarbershopService } from "@prisma/client"
+import { Service } from "@prisma/client"
 import { ptBR } from "date-fns/locale"
 
 interface BookingSummaryProps {
-  service: Pick<BarbershopService, "name" | "price">
-  barbershop: Pick<Barbershop, "name">
+  service: Pick<Service, "name" | "price">
+  barbershop: {
+    name: string
+  }
   selectedDate: Date
 }
 
@@ -15,7 +17,7 @@ const BookingSummary = ({
   selectedDate,
 }: BookingSummaryProps) => {
   return (
-    <Card>
+    <Card className="rounded-xl">
       <CardContent className="space-y-3 p-3">
         <div className="flex items-center justify-between">
           <h2 className="font-bold">{service.name}</h2>

@@ -26,6 +26,7 @@ const PhoneItem = ({ phone }: PhoneItemProps) => {
         variant="outline"
         size="sm"
         onClick={() => handleCopyPhoneClick(phone)}
+        className="rounded-xl"
       >
         Copiar
       </Button>

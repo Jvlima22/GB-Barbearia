@@ -9,7 +9,7 @@ import Link from "next/link"
 const Header = () => {
   return (
     <Card>
-      <CardContent className="flex flex-row items-center justify-between p-5">
+      <CardContent className="flex flex-row items-center justify-between bg-[#1D1D1D] p-5">
         {/* Logo */}
         <Link href="/">
           <Image
@@ -17,20 +17,20 @@ const Header = () => {
             src="/Logo.svg"
             height={18}
             width={120}
-            className="lg:ml-32"
+            className="lg:ml-[250px]"
           />
         </Link>
 
         {/* Botões (somente para desktop) */}
-        <div className="hidden items-center lg:mr-[120px] lg:flex">
+        <div className="hidden items-center lg:mr-[250px] lg:flex">
           {/* Botão "Agendamentos" */}
           <Button
             variant="default"
-            className="mr-6 flex justify-start gap-2"
+            className="mr-2 flex justify-start gap-2 rounded-xl bg-[#102332] hover:bg-[#102332]"
             asChild
           >
-            <Link href="/bookings">
-              <CalendarIcon className="h-4 w-4" />
+            <Link href="/bookings" className="text-white">
+              <CalendarIcon className="h-4 w-4 text-white" />
               Agendamentos
             </Link>
           </Button>
@@ -38,8 +38,11 @@ const Header = () => {
           {/* Menu Hamburger (somente para mobile) */}
           <Sheet>
             <SheetTrigger asChild>
-              <Button size="icon" variant="outline">
-                <MenuIcon />
+              <Button
+                size="icon"
+                style={{ backgroundColor: "#102332", borderRadius: "10px" }}
+              >
+                <MenuIcon color="#ffffff" />
               </Button>
             </SheetTrigger>
             <SidebarSheet />
@@ -49,8 +52,12 @@ const Header = () => {
         {/* Menu Hamburger (somente para mobile) */}
         <Sheet>
           <SheetTrigger asChild>
-            <Button size="icon" variant="outline" className="lg:hidden">
-              <MenuIcon />
+            <Button
+              size="icon"
+              variant="outline"
+              className="border border-white lg:hidden"
+            >
+              <MenuIcon color="#ffffff" />
             </Button>
           </SheetTrigger>
           <SidebarSheet />

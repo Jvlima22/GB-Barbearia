@@ -31,7 +31,10 @@ const Search = () => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="flex gap-2">
+      <form
+        onSubmit={form.handleSubmit(handleSubmit)}
+        className="relative flex w-full max-w-lg lg:w-[480px]"
+      >
         <FormField
           control={form.control}
           name="title"
@@ -41,15 +44,19 @@ const Search = () => {
                 <Input
                   placeholder="Faça sua busca..."
                   {...field}
-                  className="h-10 w-full lg:h-[40px] lg:w-[354.4px]" // Aplica largura e altura no desktop
+                  className="h-14 w-full rounded-xl border border-[#232329] bg-[#18181b] pr-12 text-white placeholder:text-zinc-400"
                 />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit" className="lg:mr-[800px]">
-          <SearchIcon />
+        <Button
+          type="submit"
+          size="icon"
+          className="absolute right-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-xl bg-[#102332] p-0 shadow-none hover:bg-[#3EABFD]"
+        >
+          <SearchIcon color="#FFFFFF" />
         </Button>
       </form>
     </Form>

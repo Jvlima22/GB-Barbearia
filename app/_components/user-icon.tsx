@@ -14,25 +14,25 @@ const UserIcon = () => {
     <div className="flex items-center justify-between gap-3 border-b border-solid py-5">
       {data?.user ? (
         <div className="flex items-center gap-2">
-          <Avatar>
+          <Avatar className="border border-white/10">
             <AvatarImage src={data?.user?.image ?? ""} />
           </Avatar>
 
           <div>
-            <p className="font-bold">{data.user.name}</p>
-            <p className="text-xs">{data.user.email}</p>
+            <p className="font-bold text-white">{data.user.name}</p>
+            <p className="text-xs text-white">{data.user.email}</p>
           </div>
         </div>
       ) : (
         <>
-          <h2 className="font-bold">Olá, faça seu login!</h2>
+          <h2 className="font-bold text-white">Olá, faça seu login!</h2>
           <Dialog>
             <DialogTrigger asChild>
               <Button size="icon">
-                <LogInIcon />
+                <LogInIcon color="#FFFFFF" />
               </Button>
             </DialogTrigger>
-            <DialogContent className="w-[90%]">
+            <DialogContent className="w-[90%] rounded-2xl border border-white/10 bg-[#1A1A1A] p-6 shadow-2xl">
               <SignInDialog />
             </DialogContent>
           </Dialog>
