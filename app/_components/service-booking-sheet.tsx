@@ -6,7 +6,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "./ui/sheet"
 import { Button } from "./ui/button"
 import { Calendar } from "./ui/calendar"
 import { useState } from "react"
-import { createBooking } from "../_actions/create-booking"
 import { toast } from "sonner"
 import { useSession } from "next-auth/react"
 
@@ -58,17 +57,25 @@ const ServiceBookingSheet = ({
       const [hours, minutes] = hour.split(":").map(Number)
       const bookingDate = setHours(setMinutes(selectedDate, minutes), hours)
 
-      // Call the create booking action
-      await createBooking({
-        serviceId: service.id,
-        date: bookingDate,
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        body: JSON.stringify({
+          itemId: service.id,
+          type: "SERVICE",
+          metadata: {
+            date: bookingDate.toISOString(),
+          },
+        }),
       })
 
-      toast.success("Reserva criada com sucesso!")
-      onClose()
+      const { url } = await response.json()
+
+      if (url) {
+        window.location.href = url
+      }
     } catch (error) {
-      console.error("Error creating booking:", error)
-      toast.error("Erro ao criar reserva. Tente novamente.")
+      console.error("Error initiating checkout:", error)
+      toast.error("Erro ao iniciar pagamento. Tente novamente.")
     } finally {
       setLoading(false)
     }

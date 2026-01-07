@@ -4,7 +4,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "./ui/sheet"
 import { Button } from "./ui/button"
 import { useState } from "react"
 import Image from "next/image"
-import { createPurchase } from "../_actions/create-purchase"
 import { toast } from "sonner"
 import { useSession } from "next-auth/react"
 import { MinusIcon, PlusIcon } from "lucide-react"
@@ -45,15 +44,23 @@ const ProductPurchaseSheet = ({
 
     try {
       setLoading(true)
-      await createPurchase({
-        productId: product.id,
-        quantity: quantity,
+
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        body: JSON.stringify({
+          itemId: product.id,
+          type: "PRODUCT",
+          quantity: quantity,
+        }),
       })
 
-      toast.success("Compra realizada com sucesso!")
-      onClose()
+      const { url } = await response.json()
+
+      if (url) {
+        window.location.href = url
+      }
     } catch (error) {
-      console.error("Error creating purchase:", error)
+      console.error("Error initiating checkout:", error)
       toast.error("Erro ao realizar compra. Tente novamente.")
     } finally {
       setLoading(false)
