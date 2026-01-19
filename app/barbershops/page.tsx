@@ -1,6 +1,9 @@
 import BarbershopItem from "../_components/barbershop-item"
 import Header from "../_components/header"
 import Search from "../_components/search"
+import { db } from "../_lib/prisma"
+import ServiceItem from "../_components/service-item"
+import ProductItem from "../_components/product-item"
 
 interface BarbershopsPageProps {
   searchParams: {
@@ -10,6 +13,44 @@ interface BarbershopsPageProps {
 }
 
 const BarbershopsPage = async ({ searchParams }: BarbershopsPageProps) => {
+  const query = (searchParams?.title || searchParams?.service || "").trim()
+
+  if (!query) {
+    return (
+      <div>
+        <Header />
+        <div className="my-6 px-5 lg:ml-32 lg:mt-[40px] lg:px-[150px]">
+          <Search />
+        </div>
+        <div className="p-5 lg:ml-32 lg:mt-[-140px] lg:p-[150px]">
+          <h2 className="mb-3 mt-6 text-xs font-bold uppercase text-gray-400">
+            Digite algo para buscar
+          </h2>
+        </div>
+      </div>
+    )
+  }
+
+  // Fetch services that match
+  const services = await db.service.findMany({
+    where: {
+      OR: [
+        { name: { contains: query, mode: "insensitive" } },
+        { description: { contains: query, mode: "insensitive" } },
+      ],
+    },
+  })
+
+  // Fetch products that match
+  const products = await db.product.findMany({
+    where: {
+      OR: [
+        { name: { contains: query, mode: "insensitive" } },
+        { description: { contains: query, mode: "insensitive" } },
+      ],
+    },
+  })
+
   // Since there's no barbershop model in the schema, we'll create mock data
   const mockBarbershops = [
     {
@@ -30,42 +71,14 @@ const BarbershopsPage = async ({ searchParams }: BarbershopsPageProps) => {
       address: "Avenida São Sebastião, 357, São Paulo",
       imageUrl: "/barbershop-placeholder3.jpg",
     },
-    {
-      id: "4",
-      name: "The Barber Shop",
-      address: "Rua Augusta, 1200, São Paulo",
-      imageUrl: "/barbershop-placeholder.jpg",
-    },
-    {
-      id: "5",
-      name: "Urban Cuts",
-      address: "Avenida Paulista, 1000, São Paulo",
-      imageUrl: "/barbershop-placeholder2.jpg",
-    },
-    {
-      id: "6",
-      name: "Classic Style",
-      address: "Rua Oscar Freire, 300, São Paulo",
-      imageUrl: "/barbershop-placeholder3.jpg",
-    },
   ]
 
-  // Filter mock barbershops based on search parameters
-  let filteredBarbershops = mockBarbershops
+  const filteredBarbershops = mockBarbershops.filter((barbershop) =>
+    barbershop.name.toLowerCase().includes(query.toLowerCase()),
+  )
 
-  if (searchParams?.title) {
-    filteredBarbershops = filteredBarbershops.filter((barbershop) =>
-      barbershop.name.toLowerCase().includes(searchParams.title!.toLowerCase()),
-    )
-  }
-
-  // For service search, we'll just return all barbershops since there's no relation
-  if (searchParams?.service) {
-    // In a real implementation, we'd check if any services match
-    // For now, we'll just return all barbershops
-  }
-
-  const barbershops = filteredBarbershops
+  const hasResults =
+    services.length > 0 || products.length > 0 || filteredBarbershops.length > 0
 
   return (
     <div>
@@ -75,14 +88,57 @@ const BarbershopsPage = async ({ searchParams }: BarbershopsPageProps) => {
       </div>
       <div className="p-5 lg:ml-32 lg:mt-[-140px] lg:p-[150px]">
         <h2 className="mb-3 mt-6 text-xs font-bold uppercase text-gray-400">
-          Resultados para &quot;{searchParams?.title || searchParams?.service}
-          &quot;
+          Resultados para &quot;{query}&quot;
         </h2>
-        <div className="grid grid-cols-2 gap-4 lg:h-auto">
-          {barbershops.map((barbershop) => (
-            <BarbershopItem key={barbershop.id} barbershop={barbershop} />
-          ))}
-        </div>
+
+        {!hasResults && (
+          <p className="text-sm text-gray-400">Nenhum resultado encontrado.</p>
+        )}
+
+        {services.length > 0 && (
+          <>
+            <h3 className="mb-3 mt-6 text-xs font-bold uppercase text-white">
+              Serviços
+            </h3>
+            <div className="flex gap-4 overflow-x-auto pb-4 [&::-webkit-scrollbar]:hidden">
+              {services.map((service) => (
+                <ServiceItem
+                  key={service.id}
+                  service={{ ...service, price: Number(service.price) as any }}
+                />
+              ))}
+            </div>
+          </>
+        )}
+
+        {products.length > 0 && (
+          <>
+            <h3 className="mb-3 mt-6 text-xs font-bold uppercase text-white">
+              Produtos
+            </h3>
+            <div className="flex gap-4 overflow-x-auto pb-4 [&::-webkit-scrollbar]:hidden">
+              {products.map((product) => (
+                <ProductItem
+                  key={product.id}
+                  product={{ ...product, price: Number(product.price) as any }}
+                />
+              ))}
+            </div>
+          </>
+        )}
+
+        {filteredBarbershops.length > 0 && (
+          <>
+            <h3 className="mb-3 mt-6 text-xs font-bold uppercase text-white">
+              Barbearias
+            </h3>
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+              {filteredBarbershops.map((barbershop) => (
+                <BarbershopItem key={barbershop.id} barbershop={barbershop} />
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   )
