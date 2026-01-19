@@ -7,7 +7,7 @@ import { Button } from "./ui/button"
 import { Calendar } from "./ui/calendar"
 import { useState } from "react"
 import { toast } from "sonner"
-import { useSession } from "next-auth/react"
+import { signIn, useSession } from "next-auth/react"
 
 interface ServiceBookingSheetProps {
   service: {
@@ -45,7 +45,11 @@ const ServiceBookingSheet = ({
   }
 
   const handleBooking = async () => {
-    if (!selectedDate || !hour || !session?.user) {
+    if (!session?.user) {
+      return signIn("google")
+    }
+
+    if (!selectedDate || !hour) {
       toast.error("Por favor, selecione uma data e horário.")
       return
     }
@@ -149,9 +153,13 @@ const ServiceBookingSheet = ({
           <Button
             className="mt-6 w-full rounded-xl bg-[#3EABFD] text-white hover:bg-[#102332]"
             onClick={handleBooking}
-            disabled={!selectedDate || !hour || loading}
+            disabled={(session?.user && (!selectedDate || !hour)) || loading}
           >
-            {loading ? "Agendando..." : `Agendar ${service.name.toLowerCase()}`}
+            {loading
+              ? "Agendando..."
+              : session?.user
+                ? `Agendar ${service.name.toLowerCase()}`
+                : "Fazer login para agendar"}
           </Button>
         </div>
       </SheetContent>

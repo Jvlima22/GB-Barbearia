@@ -71,9 +71,21 @@ const Home = async () => {
     return pairs
   }
 
+  // Reorder services to put "Corte degradê" and "Barba" first for the recommendation
+  const orderedForRecommendation = [
+    allServices.find((s) => s.name === "Corte degradê"),
+    allServices.find((s) => s.name === "Barba"),
+    allServices.find((s) => s.name === "Corte disfarçado"),
+    allServices.find((s) => s.name === "Sobrancelha"),
+    allServices.find((s) => s.name === "Corte social"),
+    allServices.find((s) => s.name === "Alisamento"),
+  ].filter(Boolean)
+
   // Create combined service pairs for recommendations
   const recommendedServicePairs = combineServicesInPairs(
-    allServices.slice(0, 6),
+    orderedForRecommendation.length > 0
+      ? orderedForRecommendation
+      : allServices.slice(0, 6),
   )
 
   const confirmedBookings = await getConfirmedBookings()
