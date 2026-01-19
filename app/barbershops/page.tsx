@@ -33,25 +33,36 @@ const BarbershopsPage = async ({ searchParams }: BarbershopsPageProps) => {
     )
   }
 
-  // Fetch services that match
-  const services = await db.service.findMany({
-    where: {
-      OR: [
-        { name: { contains: query, mode: "insensitive" } },
-        { description: { contains: query, mode: "insensitive" } },
-      ],
-    },
-  })
+  const isServicesSearch = query.toLowerCase() === "serviços"
+  const isProductsSearch = query.toLowerCase() === "produtos"
 
-  // Fetch products that match
-  const products = await db.product.findMany({
-    where: {
-      OR: [
-        { name: { contains: query, mode: "insensitive" } },
-        { description: { contains: query, mode: "insensitive" } },
-      ],
-    },
-  })
+  // Fetch services
+  const services = isServicesSearch
+    ? await db.service.findMany()
+    : isProductsSearch
+      ? []
+      : await db.service.findMany({
+          where: {
+            OR: [
+              { name: { contains: query, mode: "insensitive" } },
+              { description: { contains: query, mode: "insensitive" } },
+            ],
+          },
+        })
+
+  // Fetch products
+  const products = isProductsSearch
+    ? await db.product.findMany()
+    : isServicesSearch
+      ? []
+      : await db.product.findMany({
+          where: {
+            OR: [
+              { name: { contains: query, mode: "insensitive" } },
+              { description: { contains: query, mode: "insensitive" } },
+            ],
+          },
+        })
 
   // Since there's no barbershop model in the schema, we'll create mock data
   const mockBarbershops = [
@@ -75,9 +86,12 @@ const BarbershopsPage = async ({ searchParams }: BarbershopsPageProps) => {
     },
   ]
 
-  const filteredBarbershops = mockBarbershops.filter((barbershop) =>
-    barbershop.name.toLowerCase().includes(query.toLowerCase()),
-  )
+  const filteredBarbershops =
+    isServicesSearch || isProductsSearch
+      ? []
+      : mockBarbershops.filter((barbershop) =>
+          barbershop.name.toLowerCase().includes(query.toLowerCase()),
+        )
 
   const hasResults =
     services.length > 0 || products.length > 0 || filteredBarbershops.length > 0
