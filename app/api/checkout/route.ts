@@ -9,13 +9,13 @@ export async function POST(req: Request) {
     const session = await getServerSession(authOptions)
 
     if (!session?.user) {
-      return new NextResponse("Unauthorized", { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const { itemId, type, quantity = 1, metadata = {} } = await req.json()
 
     if (!itemId || !type) {
-      return new NextResponse("Missing parameters", { status: 400 })
+      return NextResponse.json({ error: "Missing parameters" }, { status: 400 })
     }
 
     let name = ""
@@ -23,16 +23,48 @@ export async function POST(req: Request) {
     let description = ""
 
     if (type === "SERVICE") {
-      const service = await db.service.findUnique({ where: { id: itemId } })
-      if (!service)
-        return new NextResponse("Service not found", { status: 404 })
-      name = service.name
-      price = Number(service.price)
-      description = service.description
+      if (itemId.startsWith("combined_")) {
+        const ids = itemId.replace("combined_", "").split("_")
+        const services = await db.service.findMany({
+          where: {
+            id: { in: ids },
+          },
+        })
+
+        if (services.length === 0) {
+          return NextResponse.json(
+            { error: "Services not found" },
+            { status: 404 },
+          )
+        }
+
+        // Sort services to match the order in IDs
+        const orderedServices = ids
+          .map((id: string) => services.find((s) => s.id === id))
+          .filter(Boolean) as typeof services
+
+        // Aggregate name, price and description
+        name = orderedServices.map((s) => s.name).join(" + ")
+        price = orderedServices.reduce((acc, s) => acc + Number(s.price), 0)
+        description = orderedServices.map((s) => s.description).join(" e ")
+      } else {
+        const service = await db.service.findUnique({ where: { id: itemId } })
+        if (!service)
+          return NextResponse.json(
+            { error: "Service not found" },
+            { status: 404 },
+          )
+        name = service.name
+        price = Number(service.price)
+        description = service.description
+      }
     } else if (type === "PRODUCT") {
       const product = await db.product.findUnique({ where: { id: itemId } })
       if (!product)
-        return new NextResponse("Product not found", { status: 404 })
+        return NextResponse.json(
+          { error: "Product not found" },
+          { status: 404 },
+        )
       name = product.name
       price = Number(product.price)
       description = product.description
@@ -70,6 +102,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ url: checkoutSession.url })
   } catch (error) {
     console.error("[STRIPE_CHECKOUT]", error)
-    return new NextResponse("Internal Error", { status: 500 })
+    return NextResponse.json({ error: "Internal Error" }, { status: 500 })
   }
 }

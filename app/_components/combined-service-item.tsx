@@ -26,16 +26,13 @@ interface CombinedServiceItemProps {
 const CombinedServiceItem = ({ service }: CombinedServiceItemProps) => {
   const [isBookingSheetOpen, setIsBookingSheetOpen] = useState(false)
 
-  // Use the first service for booking purposes
-  const firstService = service.services[0]
-
   // Format the service to match Prisma Service type
   const formattedService = {
-    id: firstService.id,
-    name: firstService.name,
-    description: firstService.description,
-    imageUrl: firstService.imageUrl,
-    price: firstService.price, // This should be a Decimal in the actual Prisma type
+    id: service.id,
+    name: service.name,
+    description: service.description,
+    imageUrl: service.imageUrl,
+    price: service.price,
   }
 
   return (
@@ -74,13 +71,11 @@ const CombinedServiceItem = ({ service }: CombinedServiceItemProps) => {
         </CardContent>
       </Card>
 
-      {firstService && (
-        <ServiceBookingSheet
-          service={formattedService}
-          isOpen={isBookingSheetOpen}
-          onClose={() => setIsBookingSheetOpen(false)}
-        />
-      )}
+      <ServiceBookingSheet
+        service={formattedService}
+        isOpen={isBookingSheetOpen}
+        onClose={() => setIsBookingSheetOpen(false)}
+      />
     </>
   )
 }

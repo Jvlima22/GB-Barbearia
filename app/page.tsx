@@ -35,7 +35,7 @@ const Home = async () => {
       if (i + 1 < services.length) {
         // Combine two services
         pairs.push({
-          id: `combined-${services[i].id}-${services[i + 1].id}`,
+          id: `combined_${services[i].id}_${services[i + 1].id}`,
           name: `${services[i].name} + ${services[i + 1].name}`,
           description: `${services[i].description} e ${services[i + 1].description}`,
           imageUrl: services[i].imageUrl, // Using the first service's image
@@ -54,7 +54,7 @@ const Home = async () => {
       } else {
         // If there's an odd number of services, add the last one as a single
         pairs.push({
-          id: `single-${services[i].id}`,
+          id: services[i].id,
           name: services[i].name,
           description: services[i].description,
           imageUrl: services[i].imageUrl,

@@ -35,15 +35,32 @@ export async function POST(req: Request) {
       if (!date)
         return new NextResponse("Missing date for service", { status: 400 })
 
-      await db.booking.create({
-        data: {
-          userId,
-          serviceId: itemId,
-          date: new Date(date),
-          paymentStatus: "SUCCEEDED",
-          stripeCheckoutSessionId: session.id,
-        },
-      })
+      if (itemId.startsWith("combined_")) {
+        const ids = itemId.replace("combined_", "").split("_")
+
+        // Create a booking for each service in the combination
+        for (const id of ids) {
+          await db.booking.create({
+            data: {
+              userId,
+              serviceId: id,
+              date: new Date(date),
+              paymentStatus: "SUCCEEDED",
+              stripeCheckoutSessionId: session.id,
+            },
+          })
+        }
+      } else {
+        await db.booking.create({
+          data: {
+            userId,
+            serviceId: itemId,
+            date: new Date(date),
+            paymentStatus: "SUCCEEDED",
+            stripeCheckoutSessionId: session.id,
+          },
+        })
+      }
     } else if (type === "PRODUCT") {
       if (!quantity)
         return new NextResponse("Missing quantity for product", { status: 400 })
