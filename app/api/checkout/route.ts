@@ -70,7 +70,10 @@ export async function POST(req: Request) {
       description = product.description
     }
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+    const appUrl =
+      process.env.NODE_ENV === "development"
+        ? process.env.NEXT_PUBLIC_APP_URL_LOCAL
+        : process.env.NEXT_PUBLIC_APP_URL_PRODUCTION
 
     const checkoutSession = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
