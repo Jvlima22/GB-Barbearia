@@ -24,10 +24,3 @@ export const authOptions: AuthOptions = {
   },
   secret: process.env.NEXT_AUTH_SECRET,
 }
-
-// Configuração automática da URL base do NextAuth
-if (process.env.NODE_ENV === "development") {
-  process.env.NEXTAUTH_URL = process.env.NEXTAUTH_URL_LOCAL
-} else {
-  process.env.NEXTAUTH_URL = process.env.NEXTAUTH_URL_PRODUCTION
-}

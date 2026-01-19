@@ -1,3 +1,5 @@
+"use client"
+
 import Image from "next/image"
 import { Card, CardContent } from "./ui/card"
 import { Button } from "./ui/button"
@@ -5,8 +7,23 @@ import { CalendarIcon, MenuIcon } from "lucide-react"
 import { Sheet, SheetTrigger } from "./ui/sheet"
 import SidebarSheet from "./sidebar-sheet"
 import Link from "next/link"
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 const Header = () => {
+  const { data } = useSession()
+  const router = useRouter()
+
+  const handleBookingsClick = () => {
+    if (!data?.user) {
+      return toast.error(
+        "Você precisa estar logado para ver seus agendamentos.",
+      )
+    }
+    router.push("/bookings")
+  }
+
   return (
     <Card>
       <CardContent className="flex flex-row items-center justify-between bg-[#1D1D1D] p-5">
@@ -27,12 +44,10 @@ const Header = () => {
           <Button
             variant="default"
             className="mr-2 flex justify-start gap-2 rounded-xl bg-[#102332] hover:bg-[#102332]"
-            asChild
+            onClick={handleBookingsClick}
           >
-            <Link href="/bookings" className="text-white">
-              <CalendarIcon className="h-4 w-4 text-white" />
-              Agendamentos
-            </Link>
+            <CalendarIcon className="h-4 w-4 text-white" />
+            <span className="text-white">Agendamentos</span>
           </Button>
 
           {/* Menu Hamburger (somente para mobile) */}

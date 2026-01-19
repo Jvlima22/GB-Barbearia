@@ -83,7 +83,7 @@ const Home = async () => {
 
   // Create combined service pairs for recommendations
   const recommendedServicePairs = combineServicesInPairs(
-    orderedForRecommendation.length > 0
+    orderedForRecommendation.length >= 2
       ? orderedForRecommendation
       : allServices.slice(0, 6),
   )

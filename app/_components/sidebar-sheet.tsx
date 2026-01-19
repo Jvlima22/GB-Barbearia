@@ -9,9 +9,22 @@ import Image from "next/image"
 import { signOut, useSession } from "next-auth/react"
 import UserIcon from "./user-icon"
 
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
+
 const SidebarSheet = () => {
   const { data } = useSession()
+  const router = useRouter()
   const handleLogoutClick = () => signOut()
+
+  const handleBookingsClick = () => {
+    if (!data?.user) {
+      return toast.error(
+        "Você precisa estar logado para ver seus agendamentos.",
+      )
+    }
+    router.push("/bookings")
+  }
 
   return (
     <SheetContent className="overflow-y-auto bg-[#1D1D1D] p-6">
@@ -30,12 +43,12 @@ const SidebarSheet = () => {
             </Link>
           </Button>
         </SheetClose>
-        <Button className="justify-start gap-2" asChild>
-          <Link href="/bookings" className="text-white">
+        <SheetClose asChild>
+          <Button className="justify-start gap-2" onClick={handleBookingsClick}>
             <CalendarIcon size={18} color="#FFFFFF" />
-            Agendamentos
-          </Link>
-        </Button>
+            <span className="text-white">Agendamentos</span>
+          </Button>
+        </SheetClose>
 
         {(data?.user as any)?.role === "ADMIN" && (
           <Button className="justify-start gap-2" asChild>
@@ -51,7 +64,7 @@ const SidebarSheet = () => {
 
       <div className="flex flex-col gap-2 border-b border-solid py-5">
         {quickSearchOptions.map((option) => (
-          <SheetClose className="text-white" key={option.title} asChild>
+          <SheetClose key={option.title} asChild>
             <Button className="justify-start gap-2" asChild>
               <Link href={`/barbershops?service=${option.title}`}>
                 <Image
@@ -60,7 +73,7 @@ const SidebarSheet = () => {
                   height={18}
                   width={18}
                 />
-                {option.title}
+                <span className="text-white">{option.title}</span>
               </Link>
             </Button>
           </SheetClose>

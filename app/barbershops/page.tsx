@@ -13,7 +13,9 @@ interface BarbershopsPageProps {
 }
 
 const BarbershopsPage = async ({ searchParams }: BarbershopsPageProps) => {
-  const query = (searchParams?.title || searchParams?.service || "").trim()
+  const query = String(
+    searchParams?.title || searchParams?.service || "",
+  ).trim()
 
   if (!query) {
     return (
