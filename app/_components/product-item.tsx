@@ -5,6 +5,7 @@ import Image from "next/image"
 import { Button } from "./ui/button"
 import { useState } from "react"
 import ProductPurchaseSheet from "./product-purchase-sheet"
+import ItemDetailsDialog from "./item-details-dialog"
 
 interface ProductItemProps {
   product: {
@@ -18,10 +19,18 @@ interface ProductItemProps {
 
 const ProductItem = ({ product }: ProductItemProps) => {
   const [isPurchaseSheetOpen, setIsPurchaseSheetOpen] = useState(false)
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false)
+
+  const handlePurchaseClick = () => {
+    setIsPurchaseSheetOpen(true)
+  }
 
   return (
     <>
-      <Card className="min-w-[167px] rounded-2xl lg:w-[185px]">
+      <Card
+        className="min-w-[167px] flex-shrink-0 cursor-pointer rounded-2xl transition-all hover:border-[#3EABFD]/50 lg:w-[185px]"
+        onClick={() => setIsDetailsDialogOpen(true)}
+      >
         <CardContent className="p-0 px-1 pt-1">
           {/* IMAGEM */}
           <div className="relative h-[159px] w-full">
@@ -47,13 +56,26 @@ const ProductItem = ({ product }: ProductItemProps) => {
             <Button
               variant="secondary"
               className="mt-3 w-full rounded-xl bg-[#102332] hover:bg-[#3EABFD]"
-              onClick={() => setIsPurchaseSheetOpen(true)}
+              onClick={(e) => {
+                e.stopPropagation()
+                handlePurchaseClick()
+              }}
             >
               <span className="text-xs text-white">Comprar</span>
             </Button>
           </div>
         </CardContent>
       </Card>
+
+      <ItemDetailsDialog
+        item={{
+          ...product,
+          type: "product",
+        }}
+        isOpen={isDetailsDialogOpen}
+        onClose={() => setIsDetailsDialogOpen(false)}
+        onAction={handlePurchaseClick}
+      />
 
       <ProductPurchaseSheet
         product={product}

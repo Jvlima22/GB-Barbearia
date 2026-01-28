@@ -6,6 +6,8 @@ import BookingItem from "../_components/booking-item"
 import { getConfirmedBookings } from "../_data/get-confirmed-bookings"
 import { getConcludedBookings } from "../_data/get-concluded-bookings"
 
+import { db } from "../_lib/prisma"
+
 const Bookings = async () => {
   const session = await getServerSession(authOptions)
   if (!session?.user) {
@@ -14,6 +16,9 @@ const Bookings = async () => {
   }
   const confirmedBookings = await getConfirmedBookings()
   const concludedBookings = await getConcludedBookings()
+
+  // Fetch settings
+  const settings = await db.settings.findFirst()
 
   return (
     <>
@@ -31,7 +36,10 @@ const Bookings = async () => {
             <div className="flex flex-col gap-3">
               {confirmedBookings.map((booking) => (
                 <div key={booking.id} className="lg:w-1/2">
-                  <BookingItem booking={JSON.parse(JSON.stringify(booking))} />
+                  <BookingItem
+                    booking={JSON.parse(JSON.stringify(booking))}
+                    settings={JSON.parse(JSON.stringify(settings))}
+                  />
                 </div>
               ))}
             </div>
@@ -45,7 +53,10 @@ const Bookings = async () => {
             <div className="flex flex-col gap-3">
               {concludedBookings.map((booking) => (
                 <div key={booking.id} className="lg:w-64">
-                  <BookingItem booking={JSON.parse(JSON.stringify(booking))} />
+                  <BookingItem
+                    booking={JSON.parse(JSON.stringify(booking))}
+                    settings={JSON.parse(JSON.stringify(settings))}
+                  />
                 </div>
               ))}
             </div>

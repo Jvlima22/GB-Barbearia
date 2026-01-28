@@ -13,6 +13,7 @@ import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { getConfirmedBookings } from "./_data/get-confirmed-bookings"
 import ServiceItem from "./_components/service-item"
+import ScrollableContainer from "./_components/scrollable-container"
 import CombinedServiceItem from "./_components/combined-service-item"
 
 const Home = async () => {
@@ -25,70 +26,30 @@ const Home = async () => {
     take: 10,
   })
 
-  // Fetch all services to use for recommendations
-  const allServices = await db.service.findMany()
+  // Fetch combos from database
+  const combos = await (db as any).combo.findMany({
+    include: {
+      service1: true,
+      service2: true,
+    },
+  })
 
-  // Function to combine services in pairs
-  const combineServicesInPairs = (services: any[]) => {
-    const pairs = []
-    for (let i = 0; i < services.length; i += 2) {
-      if (i + 1 < services.length) {
-        // Combine two services
-        pairs.push({
-          id: `combined_${services[i].id}_${services[i + 1].id}`,
-          name: `${services[i].name} + ${services[i + 1].name}`,
-          description: `${services[i].description} e ${services[i + 1].description}`,
-          imageUrl: services[i].imageUrl, // Using the first service's image
-          price: Number(services[i].price) + Number(services[i + 1].price), // Combined price
-          services: [
-            {
-              ...services[i],
-              price: Number(services[i].price),
-            },
-            {
-              ...services[i + 1],
-              price: Number(services[i + 1].price),
-            },
-          ], // Store both services for reference with converted prices
-        })
-      } else {
-        // If there's an odd number of services, add the last one as a single
-        pairs.push({
-          id: services[i].id,
-          name: services[i].name,
-          description: services[i].description,
-          imageUrl: services[i].imageUrl,
-          price: Number(services[i].price),
-          services: [
-            {
-              ...services[i],
-              price: Number(services[i].price),
-            },
-          ],
-        })
-      }
-    }
-    return pairs
-  }
-
-  // Reorder services to put "Corte degradê" and "Barba" first for the recommendation
-  const orderedForRecommendation = [
-    allServices.find((s) => s.name.toLowerCase().includes("degradê")),
-    allServices.find((s) => s.name.toLowerCase().includes("barba")),
-    allServices.find((s) => s.name.toLowerCase().includes("disfarçado")),
-    allServices.find((s) => s.name.toLowerCase().includes("sobrancelha")),
-    allServices.find((s) => s.name.toLowerCase().includes("social")),
-    allServices.find((s) => s.name.toLowerCase().includes("alisamento")),
-  ].filter((s): s is any => !!s)
-
-  // Create combined service pairs for recommendations
-  const recommendedServicePairs = combineServicesInPairs(
-    orderedForRecommendation.length >= 2
-      ? orderedForRecommendation
-      : allServices.slice(0, 6),
-  )
+  // Format combos for recommendations
+  const recommendedServicePairs = combos.map((combo: any) => ({
+    id: `combined_${combo.service1Id}_${combo.service2Id}`,
+    name: combo.name,
+    description: combo.description,
+    imageUrl: combo.imageUrl,
+    price: Number(combo.price),
+    services: [
+      { ...combo.service1, price: Number(combo.service1.price) },
+      { ...combo.service2, price: Number(combo.service2.price) },
+    ],
+  }))
 
   const confirmedBookings = await getConfirmedBookings()
+  // Fetch settings
+  const settings = await db.settings.findFirst()
 
   return (
     <div>
@@ -162,6 +123,7 @@ const Home = async () => {
                     <BookingItem
                       key={booking.id}
                       booking={JSON.parse(JSON.stringify(booking))}
+                      settings={JSON.parse(JSON.stringify(settings))}
                     />
                   ))}
                 </div>
@@ -170,44 +132,44 @@ const Home = async () => {
           </div>
 
           {/* DIREITA - RECOMENDADOS */}
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <h2 className="mb-3 mt-6 text-xs font-bold uppercase text-white lg:mt-[-24px]">
               Recomendados
             </h2>
-            <div className="flex gap-4 overflow-auto [&::-webkit-scrollbar]:hidden">
-              {recommendedServicePairs.slice(0, 3).map((servicePair: any) => (
+            <ScrollableContainer maxW="lg:max-w-[872px]">
+              {recommendedServicePairs.map((servicePair: any) => (
                 <CombinedServiceItem
                   key={servicePair.id}
                   service={servicePair}
                 />
               ))}
-            </div>
+            </ScrollableContainer>
           </div>
         </div>
 
         <h2 className="mb-3 mt-6 flex items-center justify-between text-xs font-bold uppercase text-white">
           Serviços populares
         </h2>
-        <div className="flex gap-4 overflow-auto [&::-webkit-scrollbar]:hidden">
+        <ScrollableContainer maxW="lg:max-w-[1391px]">
           {popularServices.map((service: any) => (
             <ServiceItem
               key={service.id}
               service={{ ...service, price: Number(service.price) as any }}
             />
           ))}
-        </div>
+        </ScrollableContainer>
 
         <h2 className="mb-3 mt-10 text-xs font-bold uppercase text-white">
           Produtos mais vendidos
         </h2>
-        <div className="flex gap-4 overflow-auto [&::-webkit-scrollbar]:hidden">
+        <ScrollableContainer maxW="lg:max-w-[1391px]">
           {popularProducts.map((product: any) => (
             <ProductItem
               key={product.id}
               product={{ ...product, price: Number(product.price) as any }}
             />
           ))}
-        </div>
+        </ScrollableContainer>
       </div>
     </div>
   )

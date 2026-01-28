@@ -5,6 +5,7 @@ import Image from "next/image"
 import { Button } from "./ui/button"
 import { useState } from "react"
 import ServiceBookingSheet from "./service-booking-sheet"
+import ItemDetailsDialog from "./item-details-dialog"
 
 interface CombinedServiceItemProps {
   service: {
@@ -25,6 +26,7 @@ interface CombinedServiceItemProps {
 
 const CombinedServiceItem = ({ service }: CombinedServiceItemProps) => {
   const [isBookingSheetOpen, setIsBookingSheetOpen] = useState(false)
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false)
 
   // Format the service to match Prisma Service type
   const formattedService = {
@@ -35,9 +37,16 @@ const CombinedServiceItem = ({ service }: CombinedServiceItemProps) => {
     price: service.price,
   }
 
+  const handleBookingClick = () => {
+    setIsBookingSheetOpen(true)
+  }
+
   return (
     <>
-      <Card className="min-w-[167px] rounded-2xl lg:w-[280px]">
+      <Card
+        className="min-w-[167px] flex-shrink-0 cursor-pointer rounded-2xl transition-all hover:border-[#3EABFD]/50 lg:w-[280px]"
+        onClick={() => setIsDetailsDialogOpen(true)}
+      >
         <CardContent className="p-0 px-1 pt-1">
           {/* IMAGEM */}
           <div className="relative h-[200px] w-full lg:h-[240px]">
@@ -63,13 +72,26 @@ const CombinedServiceItem = ({ service }: CombinedServiceItemProps) => {
             <Button
               variant="secondary"
               className="mt-3 w-full rounded-xl bg-[#102332] hover:bg-[#3EABFD]"
-              onClick={() => setIsBookingSheetOpen(true)}
+              onClick={(e) => {
+                e.stopPropagation()
+                handleBookingClick()
+              }}
             >
               <span className="text-xs text-white">Agendar</span>
             </Button>
           </div>
         </CardContent>
       </Card>
+
+      <ItemDetailsDialog
+        item={{
+          ...service,
+          type: "combo",
+        }}
+        isOpen={isDetailsDialogOpen}
+        onClose={() => setIsDetailsDialogOpen(false)}
+        onAction={handleBookingClick}
+      />
 
       <ServiceBookingSheet
         service={formattedService}

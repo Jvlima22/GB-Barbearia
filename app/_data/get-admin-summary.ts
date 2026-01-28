@@ -11,7 +11,7 @@ export const getAdminSummary = async () => {
     throw new Error("Acesso negado")
   }
 
-  const [bookings, purchases, services, products] = await Promise.all([
+  const [bookings, purchases, services, products, combos, users, settings] = await Promise.all([
     db.booking.findMany({
       include: {
         user: true,
@@ -32,6 +32,21 @@ export const getAdminSummary = async () => {
     }),
     db.service.findMany(),
     db.product.findMany(),
+    (db as any).combo.findMany({
+      include: {
+        service1: true,
+        service2: true,
+      },
+    }),
+    db.user.findMany({
+      where: {
+        role: "USER",
+      },
+      orderBy: {
+        name: "asc",
+      },
+    }),
+    db.settings.findFirst(),
   ])
 
   return {
@@ -39,5 +54,8 @@ export const getAdminSummary = async () => {
     purchases,
     services,
     products,
+    combos,
+    users,
+    settings,
   }
 }

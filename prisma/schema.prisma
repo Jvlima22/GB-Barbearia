@@ -81,6 +81,8 @@ model Settings {
   phones      String[]
   description String
   imageUrl    String
+  startHour   String   @default("09:00")
+  endHour     String   @default("19:00")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -93,6 +95,8 @@ model Service {
   price       Decimal   @db.Decimal(10, 2)
 
   bookings    Booking[]
+  combo1      Combo[]   @relation("Service1")
+  combo2      Combo[]   @relation("Service2")
 }
 
 model Product {
@@ -133,4 +137,21 @@ model Purchase {
 
   user    User    @relation(fields: [userId], references: [id])
   product Product @relation(fields: [productId], references: [id])
+}
+
+model Combo {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  imageUrl    String
+  price       Decimal  @db.Decimal(10, 2)
+  
+  service1Id  String
+  service2Id  String
+
+  service1    Service @relation("Service1", fields: [service1Id], references: [id])
+  service2    Service @relation("Service2", fields: [service2Id], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

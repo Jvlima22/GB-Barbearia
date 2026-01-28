@@ -56,7 +56,7 @@ const SidebarSheet = () => {
               <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-primary text-[10px] text-white">
                 A
               </div>
-              Painel Administrativo
+              Painel administrativo
             </Link>
           </Button>
         )}

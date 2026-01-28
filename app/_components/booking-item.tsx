@@ -32,6 +32,7 @@ import { deleteBooking } from "../_actions/delete-bookings"
 import { toast } from "sonner"
 import { useState } from "react"
 import BookingSummary from "./booking-summary"
+import { useSession } from "next-auth/react"
 
 interface BookingItemProps {
   booking: Prisma.BookingGetPayload<{
@@ -39,13 +40,21 @@ interface BookingItemProps {
       service: true
     }
   }>
+  settings?: any // Using any to avoid type issues for now, or define a subset type
 }
 
 // TODO: receber agendamento como prop
-const BookingItem = ({ booking }: BookingItemProps) => {
+const BookingItem = ({ booking, settings }: BookingItemProps) => {
+  const { data: session } = useSession()
   const [isSheetOpen, setIsSheetOpen] = useState(false)
-  // Since there's no barbershop relation in the schema, we'll create a mock barbershop
-  const barbershop = {
+
+  // Use settings if available, otherwise mock
+  const barbershop = settings ? {
+    name: settings.name,
+    address: settings.address,
+    imageUrl: settings.imageUrl,
+    phones: settings.phones || [],
+  } : {
     name: "GB Barbearia",
     address: "Rua das Doninhas, 253 - Cotia, SP",
     imageUrl: "/Logo-GB.jpeg",
@@ -161,7 +170,7 @@ const BookingItem = ({ booking }: BookingItemProps) => {
                 Voltar
               </Button>
             </SheetClose>
-            {isConfirmed && (
+            {isConfirmed && (session?.user as any)?.role === "ADMIN" && (
               <Dialog>
                 <DialogTrigger className="w-full rounded-xl border border-red-500">
                   <Button variant="destructive" className="w-full text-white">

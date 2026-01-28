@@ -5,9 +5,10 @@ import { ptBR } from "date-fns/locale"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "./ui/sheet"
 import { Button } from "./ui/button"
 import { Calendar } from "./ui/calendar"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { signIn, useSession } from "next-auth/react"
+import { getSettings } from "../_actions/get-settings"
 
 interface ServiceBookingSheetProps {
   service: {
@@ -30,15 +31,31 @@ const ServiceBookingSheet = ({
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
   const [hour, setHour] = useState<string | undefined>(undefined)
   const [loading, setLoading] = useState(false)
+  const [settings, setSettings] = useState<any | null>(null)
 
-  // Generate time slots (every 30 minutes from 9am to 7pm)
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const data = await getSettings()
+        setSettings(data)
+      } catch (error) {
+        console.error("Erro ao buscar configurações:", error)
+      }
+    }
+    fetchSettings()
+  }, [])
+
+  // Generate time slots based on settings
   const timeSlots = () => {
+    const startHour = settings?.startHour ? Number(settings.startHour.split(":")[0]) : 9
+    const endHour = settings?.endHour ? Number(settings.endHour.split(":")[0]) : 19
+
     const slots = []
-    for (let hour = 9; hour <= 19; hour++) {
-      slots.push(`${hour.toString().padStart(2, "0")}:00`)
-      if (hour !== 19) {
+    for (let h = startHour; h <= endHour; h++) {
+      slots.push(`${h.toString().padStart(2, "0")}:00`)
+      if (h !== endHour) {
         // Don't add 30 min slot for the last hour
-        slots.push(`${hour.toString().padStart(2, "0")}:30`)
+        slots.push(`${h.toString().padStart(2, "0")}:30`)
       }
     }
     return slots
@@ -71,6 +88,11 @@ const ServiceBookingSheet = ({
           },
         }),
       })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Erro ao processar agendamento")
+      }
 
       const { url } = await response.json()
 

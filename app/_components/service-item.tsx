@@ -6,6 +6,7 @@ import Image from "next/image"
 import { Button } from "./ui/button"
 import { useState } from "react"
 import ServiceBookingSheet from "./service-booking-sheet"
+import ItemDetailsDialog from "./item-details-dialog"
 
 interface ServiceItemProps {
   service: Service
@@ -19,10 +20,18 @@ interface ServiceItemProps {
 
 const ServiceItem = ({ service }: ServiceItemProps) => {
   const [isBookingSheetOpen, setIsBookingSheetOpen] = useState(false)
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false)
+
+  const handleBookingClick = () => {
+    setIsBookingSheetOpen(true)
+  }
 
   return (
     <>
-      <Card className="min-w-[167px] rounded-2xl lg:w-[185px]">
+      <Card
+        className="min-w-[167px] flex-shrink-0 cursor-pointer rounded-2xl transition-all hover:border-[#3EABFD]/50 lg:w-[185px]"
+        onClick={() => setIsDetailsDialogOpen(true)}
+      >
         <CardContent className="p-0 px-1 pt-1">
           {/* IMAGEM */}
           <div className="relative h-[159px] w-full">
@@ -48,13 +57,27 @@ const ServiceItem = ({ service }: ServiceItemProps) => {
             <Button
               variant="secondary"
               className="mt-3 w-full rounded-xl bg-[#102332] hover:bg-[#3EABFD]"
-              onClick={() => setIsBookingSheetOpen(true)}
+              onClick={(e) => {
+                e.stopPropagation()
+                handleBookingClick()
+              }}
             >
               <span className="text-xs text-white">Agendar</span>
             </Button>
           </div>
         </CardContent>
       </Card>
+
+      <ItemDetailsDialog
+        item={{
+          ...service,
+          price: Number(service.price),
+          type: "service",
+        }}
+        isOpen={isDetailsDialogOpen}
+        onClose={() => setIsDetailsDialogOpen(false)}
+        onAction={handleBookingClick}
+      />
 
       <ServiceBookingSheet
         service={{ ...service, price: Number(service.price) }}
