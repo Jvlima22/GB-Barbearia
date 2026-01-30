@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider   = "prisma-client-js"
+  engineType = "binary"
 }
 
 datasource db {
@@ -87,6 +88,27 @@ model Settings {
   updatedAt   DateTime @updatedAt
 }
 
+model OperatingDay {
+  id        String   @id @default(uuid())
+  dayOfWeek Int      @unique // 0 (Sunday) to 6 (Saturday)
+  startTime String   @default("09:00")
+  endTime   String   @default("19:00")
+  isOpen    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model OperatingException {
+  id          String   @id @default(uuid())
+  date        DateTime @unique
+  startTime   String?
+  endTime     String?
+  isOpen      Boolean  @default(true)
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 model Service {
   id          String    @id @default(uuid())
   name        String    @unique
@@ -112,7 +134,8 @@ model Product {
 model Booking {
   id                      String        @id @default(uuid())
   userId                  String
-  serviceId               String
+  serviceId               String?
+  comboId                 String?
   date                    DateTime
   stripeCheckoutSessionId String?
   paymentStatus           PaymentStatus?
@@ -121,7 +144,8 @@ model Booking {
   updatedAt DateTime @updatedAt
 
   user    User    @relation(fields: [userId], references: [id])
-  service Service @relation(fields: [serviceId], references: [id])
+  service Service? @relation(fields: [serviceId], references: [id])
+  combo   Combo?   @relation(fields: [comboId], references: [id])
 }
 
 model Purchase {
@@ -145,6 +169,7 @@ model Combo {
   description String
   imageUrl    String
   price       Decimal  @db.Decimal(10, 2)
+  bookings    Booking[]
   
   service1Id  String
   service2Id  String

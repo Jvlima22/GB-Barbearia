@@ -38,6 +38,7 @@ interface BookingItemProps {
   booking: Prisma.BookingGetPayload<{
     include: {
       service: true
+      combo: true
     }
   }>
   settings?: any // Using any to avoid type issues for now, or define a subset type
@@ -49,17 +50,19 @@ const BookingItem = ({ booking, settings }: BookingItemProps) => {
   const [isSheetOpen, setIsSheetOpen] = useState(false)
 
   // Use settings if available, otherwise mock
-  const barbershop = settings ? {
-    name: settings.name,
-    address: settings.address,
-    imageUrl: settings.imageUrl,
-    phones: settings.phones || [],
-  } : {
-    name: "GB Barbearia",
-    address: "Rua das Doninhas, 253 - Cotia, SP",
-    imageUrl: "/Logo-GB.jpeg",
-    phones: ["(11) 99999-9999"],
-  }
+  const barbershop = settings
+    ? {
+        name: settings.name,
+        address: settings.address,
+        imageUrl: settings.imageUrl,
+        phones: settings.phones || [],
+      }
+    : {
+        name: "GB Barbearia",
+        address: "Rua das Doninhas, 253 - Cotia, SP",
+        imageUrl: "/Logo-GB.jpeg",
+        phones: ["(11) 99999-9999"],
+      }
   const isConfirmed = isFuture(booking.date)
   const handleCancelBooking = async () => {
     try {
@@ -88,7 +91,9 @@ const BookingItem = ({ booking, settings }: BookingItemProps) => {
                 {isConfirmed ? "Confirmado" : "Finalizado"}
               </Badge>
               <h3 className="font-semibold text-white">
-                {booking.service.name}
+                {booking.service?.name ||
+                  (booking as any).combo?.name ||
+                  "Sem descrição"}
               </h3>
 
               <div className="flex items-center gap-2">
@@ -152,13 +157,13 @@ const BookingItem = ({ booking, settings }: BookingItemProps) => {
           <div className="mb-3 mt-6 text-white">
             <BookingSummary
               barbershop={barbershop}
-              service={booking.service}
+              service={(booking.service || (booking as any).combo) as any}
               selectedDate={booking.date}
             />
           </div>
 
           <div className="space-y-3 text-white">
-            {barbershop.phones.map((phone, index) => (
+            {barbershop.phones.map((phone: string, index: number) => (
               <PhoneItem key={index} phone={phone} />
             ))}
           </div>

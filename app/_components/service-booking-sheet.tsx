@@ -1,6 +1,6 @@
 "use client"
 
-import { setHours, setMinutes } from "date-fns"
+import { setHours, setMinutes, startOfDay } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "./ui/sheet"
 import { Button } from "./ui/button"
@@ -8,7 +8,12 @@ import { Calendar } from "./ui/calendar"
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { signIn, useSession } from "next-auth/react"
-import { getSettings } from "../_actions/get-settings"
+import { getAvailableSlots } from "../_actions/get-available-slots"
+import {
+  getOperatingDays,
+  getOperatingExceptions,
+} from "../_actions/get-operating-settings"
+import { cn } from "@/app/_lib/utils"
 
 interface ServiceBookingSheetProps {
   service: {
@@ -31,35 +36,59 @@ const ServiceBookingSheet = ({
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
   const [hour, setHour] = useState<string | undefined>(undefined)
   const [loading, setLoading] = useState(false)
-  const [settings, setSettings] = useState<any | null>(null)
+  const [availableSlots, setAvailableSlots] = useState<string[]>([])
+  const [operatingDays, setOperatingDays] = useState<any[]>([])
+  const [exceptions, setExceptions] = useState<any[]>([])
+  const [slotsCache, setSlotsCache] = useState<Record<string, string[]>>({})
 
+  // Fetch operating settings once when component opens
   useEffect(() => {
-    const fetchSettings = async () => {
+    if (isOpen) {
+      const fetchOperatingSettings = async () => {
+        try {
+          const [days, currentExceptions] = await Promise.all([
+            getOperatingDays(),
+            getOperatingExceptions(),
+          ])
+          setOperatingDays(days)
+          setExceptions(currentExceptions)
+        } catch (error) {
+          console.error("Erro ao carregar configurações de horários:", error)
+        }
+      }
+      fetchOperatingSettings()
+    } else {
+      // Reset state when closed
+      setSelectedDate(undefined)
+      setHour(undefined)
+      setAvailableSlots([])
+    }
+  }, [isOpen])
+
+  // Fetch slots when date changes
+  useEffect(() => {
+    if (!selectedDate) return
+    const dateKey = selectedDate.toDateString()
+
+    if (slotsCache[dateKey]) {
+      setAvailableSlots(slotsCache[dateKey])
+      return
+    }
+
+    const fetchBookings = async () => {
+      setLoading(true)
       try {
-        const data = await getSettings()
-        setSettings(data)
+        const slots = await getAvailableSlots({ date: selectedDate })
+        setAvailableSlots(slots)
+        setSlotsCache((prev) => ({ ...prev, [dateKey]: slots }))
       } catch (error) {
-        console.error("Erro ao buscar configurações:", error)
+        console.error("Erro ao carregar horários:", error)
+      } finally {
+        setLoading(false)
       }
     }
-    fetchSettings()
-  }, [])
-
-  // Generate time slots based on settings
-  const timeSlots = () => {
-    const startHour = settings?.startHour ? Number(settings.startHour.split(":")[0]) : 9
-    const endHour = settings?.endHour ? Number(settings.endHour.split(":")[0]) : 19
-
-    const slots = []
-    for (let h = startHour; h <= endHour; h++) {
-      slots.push(`${h.toString().padStart(2, "0")}:00`)
-      if (h !== endHour) {
-        // Don't add 30 min slot for the last hour
-        slots.push(`${h.toString().padStart(2, "0")}:30`)
-      }
-    }
-    return slots
-  }
+    fetchBookings()
+  }, [selectedDate, slotsCache])
 
   const handleBooking = async () => {
     if (!session?.user) {
@@ -74,7 +103,6 @@ const ServiceBookingSheet = ({
     try {
       setLoading(true)
 
-      // Create the date with selected date and selected hour
       const [hours, minutes] = hour.split(":").map(Number)
       const bookingDate = setHours(setMinutes(selectedDate, minutes), hours)
 
@@ -107,78 +135,128 @@ const ServiceBookingSheet = ({
     }
   }
 
+  // Help function to determine if a date is disabled
+  const isDateDisabled = (date: Date) => {
+    const normalizedDate = startOfDay(date)
+    const today = startOfDay(new Date())
+
+    // 1. Block past dates
+    if (normalizedDate < today) return true
+
+    // 2. Check Exceptions
+    const exception = exceptions.find(
+      (e) =>
+        startOfDay(new Date(e.date)).getTime() === normalizedDate.getTime(),
+    )
+    if (exception) return !exception.isOpen
+
+    // 3. Check Operating Days
+    const dayOfWeek = date.getDay()
+    const standardDay = operatingDays.find((d) => d.dayOfWeek === dayOfWeek)
+    if (standardDay) return !standardDay.isOpen
+
+    return false
+  }
+
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className="w-[90%] bg-[#121212] sm:w-[400px]">
+      <SheetContent className="w-[90%] overflow-y-auto border-white/10 bg-[#121212] sm:w-[400px]">
         <SheetHeader>
           <SheetTitle className="text-left text-white">
             Agendar {service.name.toLowerCase()}
           </SheetTitle>
         </SheetHeader>
 
-        <div className="py-6">
-          <div className="mb-6">
+        <div className="space-y-6 py-6">
+          <div>
             <h3 className="mb-2 text-sm font-semibold text-white">
               Selecione a data
             </h3>
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={setSelectedDate}
-              disabled={(date) => {
-                // Disable past dates
-                return date < new Date()
-              }}
-              locale={ptBR}
-              classNames={{
-                day_selected:
-                  "bg-[#3EABFD] text-white hover:bg-[#3EABFD] hover:text-white rounded-xl",
-              }}
-            />
+            <div className="calendar-container">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={setSelectedDate}
+                disabled={isDateDisabled}
+                locale={ptBR}
+                fromDate={new Date()}
+                classNames={{
+                  day_selected:
+                    "bg-[#3EABFD] text-white hover:bg-[#3EABFD] hover:text-white rounded-xl",
+                  day_disabled: "text-gray-600 opacity-20 cursor-not-allowed",
+                  day_today: "bg-white/5 text-[#3EABFD] font-bold",
+                }}
+              />
+            </div>
           </div>
 
           {selectedDate && (
-            <div>
-              <h3 className="mb-2 text-sm font-semibold text-white">
+            <div className="min-h-[150px] space-y-2">
+              <h3 className="text-sm font-semibold text-white">
                 Selecione o horário
               </h3>
-              <div className="grid grid-cols-3 gap-2 text-white">
-                {timeSlots().map((time) => {
-                  const [hours, minutes] = time.split(":").map(Number)
-                  const dateTime = setHours(
-                    setMinutes(selectedDate, minutes),
-                    hours,
-                  )
+              {loading && availableSlots.length === 0 ? (
+                <div className="grid grid-cols-3 gap-2">
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                    <div
+                      key={i}
+                      className="h-9 w-full animate-pulse rounded-xl bg-white/5"
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div
+                  className={cn(
+                    "grid grid-cols-3 gap-2 text-white transition-opacity",
+                    loading ? "opacity-50" : "opacity-100",
+                  )}
+                >
+                  {availableSlots.map((time) => {
+                    const [hours, minutes] = time.split(":").map(Number)
+                    const dateTime = setHours(
+                      setMinutes(selectedDate, minutes),
+                      hours,
+                    )
 
-                  // Disable past times on the current day
-                  const isPastTime =
-                    selectedDate.toDateString() === new Date().toDateString() &&
-                    dateTime < new Date()
+                    const isPastTime =
+                      selectedDate.toDateString() ===
+                        new Date().toDateString() && dateTime < new Date()
 
-                  return (
-                    <Button
-                      key={time}
-                      variant={hour === time ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setHour(time)}
-                      disabled={isPastTime}
-                      className={`rounded-xl text-xs text-white ${hour === time ? "border border-[#3EABFD] bg-[#3EABFD]" : "border border-white"}`}
-                    >
-                      {time}
-                    </Button>
-                  )
-                })}
-              </div>
+                    return (
+                      <Button
+                        key={time}
+                        variant={hour === time ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setHour(time)}
+                        disabled={isPastTime}
+                        className={cn(
+                          "rounded-xl text-xs text-white transition-all",
+                          hour === time
+                            ? "border-[#3EABFD] bg-[#3EABFD]"
+                            : "border-white/10 bg-transparent hover:bg-white/5",
+                        )}
+                      >
+                        {time}
+                      </Button>
+                    )
+                  })}
+                  {availableSlots.length === 0 && !loading && (
+                    <p className="col-span-3 py-4 text-center text-xs text-gray-400">
+                      Não há horários disponíveis para esta data.
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
           <Button
-            className="mt-6 w-full rounded-xl bg-[#3EABFD] text-white hover:bg-[#102332]"
+            className="w-full rounded-xl bg-[#3EABFD] text-white hover:bg-[#2e8acb]"
             onClick={handleBooking}
             disabled={(session?.user && (!selectedDate || !hour)) || loading}
           >
-            {loading
-              ? "Agendando..."
+            {loading && !selectedDate
+              ? "Carregando..."
               : session?.user
                 ? `Agendar ${service.name.toLowerCase()}`
                 : "Fazer login para agendar"}

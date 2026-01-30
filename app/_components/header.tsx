@@ -6,6 +6,7 @@ import { Button } from "./ui/button"
 import { CalendarIcon, MenuIcon } from "lucide-react"
 import { Sheet, SheetTrigger } from "./ui/sheet"
 import SidebarSheet from "./sidebar-sheet"
+import Notifications from "./notifications"
 import Link from "next/link"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
@@ -38,45 +39,50 @@ const Header = () => {
           />
         </Link>
 
-        {/* Botões (somente para desktop) */}
-        <div className="hidden items-center lg:mr-[250px] lg:flex">
-          {/* Botão "Agendamentos" */}
-          <Button
-            variant="default"
-            className="mr-2 flex justify-start gap-2 rounded-xl bg-[#102332] hover:bg-[#102332]"
-            onClick={handleBookingsClick}
-          >
-            <CalendarIcon className="h-4 w-4 text-white" />
-            <span className="text-white">Agendamentos</span>
-          </Button>
+        {/* Botões e Menu */}
+        <div className="flex items-center lg:mr-[250px]">
+          <Notifications />
 
-          {/* Menu Hamburger (somente para mobile) */}
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button
-                size="icon"
-                style={{ backgroundColor: "#102332", borderRadius: "10px" }}
-              >
-                <MenuIcon color="#ffffff" />
-              </Button>
-            </SheetTrigger>
-            <SidebarSheet />
-          </Sheet>
-        </div>
-
-        {/* Menu Hamburger (somente para mobile) */}
-        <Sheet>
-          <SheetTrigger asChild>
+          {/* Desktop specific */}
+          <div className="hidden items-center lg:flex">
             <Button
-              size="icon"
-              variant="outline"
-              className="border border-white lg:hidden"
+              variant="default"
+              className="mr-2 flex justify-start gap-2 rounded-xl bg-[#102332] hover:bg-[#102332]"
+              onClick={handleBookingsClick}
             >
-              <MenuIcon color="#ffffff" />
+              <CalendarIcon className="h-4 w-4 text-white" />
+              <span className="text-white">Agendamentos</span>
             </Button>
-          </SheetTrigger>
-          <SidebarSheet />
-        </Sheet>
+
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button
+                  size="icon"
+                  style={{ backgroundColor: "#102332", borderRadius: "10px" }}
+                >
+                  <MenuIcon color="#ffffff" />
+                </Button>
+              </SheetTrigger>
+              <SidebarSheet />
+            </Sheet>
+          </div>
+
+          {/* Mobile specific */}
+          <div className="flex items-center gap-2 lg:hidden">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="border border-white"
+                >
+                  <MenuIcon color="#ffffff" />
+                </Button>
+              </SheetTrigger>
+              <SidebarSheet />
+            </Sheet>
+          </div>
+        </div>
       </CardContent>
     </Card>
   )

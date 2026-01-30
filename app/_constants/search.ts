@@ -12,24 +12,8 @@ export const quickSearchOptions: QuickSearchOption[] = [
     imageUrl: "/produto.svg",
     title: "Produtos",
   },
-  // {
-  //   imageUrl: "/barba.svg",
-  //   title: "Barba",
-  // },
-  // {
-  //   imageUrl: "/acabamento.svg",
-  //   title: "Acabamento",
-  // },
-  // {
-  //   imageUrl: "/massagem.svg",
-  //   title: "Massagem",
-  // },
-  // {
-  //   imageUrl: "/sobrancelha.svg",
-  //   title: "Sobrancelha",
-  // },
-  // {
-  //   imageUrl: "/hidratação.svg",
-  //   title: "Hidratação",
-  // },
+  {
+    imageUrl: "/barba.svg",
+    title: "Combos",
+  },
 ]

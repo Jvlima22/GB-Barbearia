@@ -44,12 +44,12 @@ const CombinedServiceItem = ({ service }: CombinedServiceItemProps) => {
   return (
     <>
       <Card
-        className="min-w-[167px] flex-shrink-0 cursor-pointer rounded-2xl transition-all hover:border-[#3EABFD]/50 lg:w-[280px]"
+        className="w-[167px] min-w-[167px] flex-shrink-0 cursor-pointer rounded-2xl transition-all hover:border-[#3EABFD]/50 lg:w-[280px]"
         onClick={() => setIsDetailsDialogOpen(true)}
       >
         <CardContent className="p-0 px-1 pt-1">
           {/* IMAGEM */}
-          <div className="relative h-[200px] w-full lg:h-[240px]">
+          <div className="relative h-[159px] w-full lg:h-[240px]">
             <Image
               alt={service.name}
               fill

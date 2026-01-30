@@ -4,6 +4,7 @@ import Search from "../_components/search"
 import { db } from "../_lib/prisma"
 import ServiceItem from "../_components/service-item"
 import ProductItem from "../_components/product-item"
+import CombinedServiceItem from "../_components/combined-service-item"
 
 interface BarbershopsPageProps {
   searchParams: {
@@ -35,6 +36,7 @@ const BarbershopsPage = async ({ searchParams }: BarbershopsPageProps) => {
 
   const isServicesSearch = query.toLowerCase() === "serviços"
   const isProductsSearch = query.toLowerCase() === "produtos"
+  const isCombosSearch = query.toLowerCase() === "combos"
 
   // Fetch services
   const services = isServicesSearch
@@ -64,6 +66,29 @@ const BarbershopsPage = async ({ searchParams }: BarbershopsPageProps) => {
           },
         })
 
+  // Fetch combos
+  const combos = isCombosSearch
+    ? await (db as any).combo.findMany({
+        include: {
+          service1: true,
+          service2: true,
+        },
+      })
+    : isServicesSearch || isProductsSearch
+      ? []
+      : await (db as any).combo.findMany({
+          where: {
+            OR: [
+              { name: { contains: query, mode: "insensitive" } },
+              { description: { contains: query, mode: "insensitive" } },
+            ],
+          },
+          include: {
+            service1: true,
+            service2: true,
+          },
+        })
+
   // Since there's no barbershop model in the schema, we'll create mock data
   const mockBarbershops = [
     {
@@ -87,14 +112,17 @@ const BarbershopsPage = async ({ searchParams }: BarbershopsPageProps) => {
   ]
 
   const filteredBarbershops =
-    isServicesSearch || isProductsSearch
+    isServicesSearch || isProductsSearch || isCombosSearch
       ? []
       : mockBarbershops.filter((barbershop) =>
           barbershop.name.toLowerCase().includes(query.toLowerCase()),
         )
 
   const hasResults =
-    services.length > 0 || products.length > 0 || filteredBarbershops.length > 0
+    services.length > 0 ||
+    products.length > 0 ||
+    combos.length > 0 ||
+    filteredBarbershops.length > 0
 
   return (
     <div>
@@ -137,6 +165,26 @@ const BarbershopsPage = async ({ searchParams }: BarbershopsPageProps) => {
                 <ProductItem
                   key={product.id}
                   product={{ ...product, price: Number(product.price) as any }}
+                />
+              ))}
+            </div>
+          </>
+        )}
+
+        {combos.length > 0 && (
+          <>
+            <h3 className="mb-3 mt-6 text-xs font-bold uppercase text-white">
+              Combos
+            </h3>
+            <div className="flex gap-4 overflow-x-auto pb-4 [&::-webkit-scrollbar]:hidden">
+              {combos.map((combo: any) => (
+                <CombinedServiceItem
+                  key={combo.id}
+                  service={{
+                    ...combo,
+                    price: Number(combo.price),
+                    services: [combo.service1, combo.service2],
+                  }}
                 />
               ))}
             </div>

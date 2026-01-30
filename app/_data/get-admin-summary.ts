@@ -11,17 +11,28 @@ export const getAdminSummary = async () => {
     throw new Error("Acesso negado")
   }
 
-  const [bookings, purchases, services, products, combos, users, settings] = await Promise.all([
-    db.booking.findMany({
+  const [
+    bookings,
+    purchases,
+    services,
+    products,
+    combos,
+    users,
+    settings,
+    operatingDays,
+    operatingExceptions,
+  ] = await Promise.all([
+    (db as any).booking.findMany({
       include: {
         user: true,
         service: true,
-      },
+        combo: true,
+      } as any,
       orderBy: {
         date: "desc",
       },
     }),
-    db.purchase.findMany({
+    (db as any).purchase.findMany({
       include: {
         user: true,
         product: true,
@@ -30,15 +41,15 @@ export const getAdminSummary = async () => {
         createdAt: "desc",
       },
     }),
-    db.service.findMany(),
-    db.product.findMany(),
+    (db as any).service.findMany(),
+    (db as any).product.findMany(),
     (db as any).combo.findMany({
       include: {
         service1: true,
         service2: true,
       },
     }),
-    db.user.findMany({
+    (db as any).user.findMany({
       where: {
         role: "USER",
       },
@@ -46,16 +57,29 @@ export const getAdminSummary = async () => {
         name: "asc",
       },
     }),
-    db.settings.findFirst(),
+    (db as any).settings.findFirst(),
+    (db as any).operatingDay.findMany({ orderBy: { dayOfWeek: "asc" } }),
+    (db as any).operatingException.findMany({ orderBy: { date: "asc" } }),
   ])
 
   return {
-    bookings,
-    purchases,
-    services,
-    products,
-    combos,
+    bookings: bookings.map((b: any) => ({
+      ...b,
+      service: b.service
+        ? { ...b.service, price: Number(b.service.price) }
+        : null,
+      combo: b.combo ? { ...b.combo, price: Number(b.combo.price) } : null,
+    })),
+    purchases: purchases.map((p: any) => ({
+      ...p,
+      product: { ...p.product, price: Number(p.product.price) },
+    })),
+    services: services.map((s: any) => ({ ...s, price: Number(s.price) })),
+    products: products.map((p: any) => ({ ...p, price: Number(p.price) })),
+    combos: combos.map((c: any) => ({ ...c, price: Number(c.price) })),
     users,
     settings,
+    operatingDays,
+    operatingExceptions,
   }
 }

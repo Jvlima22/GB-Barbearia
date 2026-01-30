@@ -15,7 +15,9 @@ import { ptBR } from "date-fns/locale"
 import { CalendarIcon, PackageIcon, ScissorsIcon } from "lucide-react"
 import ManagementTabs from "./_components/management-tabs"
 import ManualBookingDialog from "./_components/manual-booking-dialog"
+import ManualSaleDialog from "./_components/manual-sale-dialog"
 import DeleteBookingButton from "./_components/delete-booking-button"
+import DeletePurchaseButton from "./_components/delete-purchase-button"
 
 const AdminPage = async () => {
   const session = await getServerSession(authOptions)
@@ -24,10 +26,24 @@ const AdminPage = async () => {
     return redirect("/")
   }
 
-  const { bookings, purchases, services, products, combos, users, settings } = await getAdminSummary()
+  const {
+    bookings,
+    purchases,
+    services,
+    products,
+    combos,
+    users,
+    settings,
+    operatingDays,
+    operatingExceptions,
+  } = await getAdminSummary()
 
   const totalRevenue =
-    bookings.reduce((acc: number, booking: any) => acc + Number(booking.service.price), 0) +
+    bookings.reduce(
+      (acc: number, booking: any) =>
+        acc + Number(booking.service?.price || booking.combo?.price || 0),
+      0,
+    ) +
     purchases.reduce(
       (acc: number, purchase: any) =>
         acc + Number(purchase.product.price) * purchase.quantity,
@@ -43,25 +59,37 @@ const AdminPage = async () => {
           <h1 className="text-2xl font-bold text-white">
             Painel administrativo
           </h1>
-          <ManualBookingDialog users={users} services={services} />
+          <div className="flex gap-4">
+            <ManualSaleDialog users={users} products={products} />
+            <ManualBookingDialog
+              users={users}
+              services={services}
+              combos={combos}
+            />
+          </div>
         </div>
 
         <ManagementTabs
           services={services}
           products={products}
           combos={combos}
-          settings={settings || {
-            id: 0,
-            name: "",
-            address: "",
-            phones: [],
-            description: "",
-            imageUrl: "",
-            startHour: "",
-            endHour: "",
-            createdAt: new Date(),
-            updatedAt: new Date()
-          } as any}
+          settings={
+            settings ||
+            ({
+              id: 0,
+              name: "",
+              address: "",
+              phones: [],
+              description: "",
+              imageUrl: "",
+              startHour: "",
+              endHour: "",
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            } as any)
+          }
+          operatingDays={operatingDays}
+          operatingExceptions={operatingExceptions}
         >
           <div className="flex flex-col gap-8">
             {/* METRICS */}
@@ -69,7 +97,7 @@ const AdminPage = async () => {
               <Card className="border-white/10 bg-[#1A1A1A]">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium text-gray-400">
-                    Total Agendamentos
+                    Total de agendamentos
                   </CardTitle>
                   <CalendarIcon className="h-4 w-4 text-primary" />
                 </CardHeader>
@@ -83,13 +111,16 @@ const AdminPage = async () => {
               <Card className="border-white/10 bg-[#1A1A1A]">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium text-gray-400">
-                    Produtos Vendidos
+                    Total de produtos vendidos
                   </CardTitle>
                   <PackageIcon className="h-4 w-4 text-primary" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-white">
-                    {purchases.reduce((acc: number, p: any) => acc + p.quantity, 0)}
+                    {purchases.reduce(
+                      (acc: number, p: any) => acc + p.quantity,
+                      0,
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -97,7 +128,7 @@ const AdminPage = async () => {
               <Card className="border-white/10 bg-[#1A1A1A]">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium text-gray-400">
-                    Serviços Ativos
+                    Serviços ativos
                   </CardTitle>
                   <ScissorsIcon className="h-4 w-4 text-primary" />
                 </CardHeader>
@@ -111,7 +142,7 @@ const AdminPage = async () => {
               <Card className="border-white/10 bg-[#1A1A1A]">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium text-gray-400">
-                    Receita Total
+                    Receita total
                   </CardTitle>
                   <span className="font-bold text-primary">R$</span>
                 </CardHeader>
@@ -130,7 +161,7 @@ const AdminPage = async () => {
               <Card className="border-white/10 bg-[#1A1A1A]">
                 <CardHeader>
                   <CardTitle className="text-lg font-bold text-white">
-                    Últimos Agendamentos
+                    Últimos agendamentos
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-col gap-4">
@@ -144,7 +175,9 @@ const AdminPage = async () => {
                           {booking.user.name}
                         </span>
                         <span className="text-xs text-gray-400">
-                          {booking.service.name}
+                          {booking.service?.name ||
+                            booking.combo?.name ||
+                            "Sem descrição"}
                         </span>
                       </div>
                       <div className="flex items-center gap-6">
@@ -184,7 +217,7 @@ const AdminPage = async () => {
               <Card className="border-white/10 bg-[#1A1A1A]">
                 <CardHeader>
                   <CardTitle className="text-lg font-bold text-white">
-                    Vendas Recentes
+                    Vendas recentes
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-col gap-4">
@@ -201,20 +234,30 @@ const AdminPage = async () => {
                           {purchase.product.name} ({purchase.quantity}x)
                         </span>
                       </div>
-                      <div className="flex flex-col items-end">
-                        <span className="text-sm font-bold text-white">
-                          R${" "}
-                          {(
-                            Number(purchase.product.price) * purchase.quantity
-                          ).toLocaleString("pt-BR", {
-                            minimumFractionDigits: 2,
-                          })}
-                        </span>
-                        <span className="text-[10px] text-gray-500">
-                          {format(purchase.createdAt, "dd/MM HH:mm", {
-                            locale: ptBR,
-                          })}
-                        </span>
+                      <div className="flex items-center gap-6">
+                        <div className="flex items-center gap-5">
+                          <div className="flex items-center gap-4">
+                            <span className="text-sm text-white">
+                              {format(purchase.createdAt, "dd/MM", {
+                                locale: ptBR,
+                              })}
+                            </span>
+                            <span className="text-sm text-white">
+                              {format(purchase.createdAt, "HH:mm", {
+                                locale: ptBR,
+                              })}
+                            </span>
+                          </div>
+                          <span className="text-sm font-bold text-white">
+                            R${" "}
+                            {(
+                              Number(purchase.product.price) * purchase.quantity
+                            ).toLocaleString("pt-BR", {
+                              minimumFractionDigits: 2,
+                            })}
+                          </span>
+                        </div>
+                        <DeletePurchaseButton purchaseId={purchase.id} />
                       </div>
                     </div>
                   ))}
