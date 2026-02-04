@@ -22,7 +22,7 @@ const WhatsAppButton = ({ phoneNumber }: WhatsAppButtonProps) => {
       href={`https://wa.me/${cleanPhoneNumber}`}
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-6 right-10 z-50 mb-10 hidden h-14 w-14 animate-pulse_shadow items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg transition-all hover:scale-110 active:scale-95 lg:flex"
+      className="fixed bottom-6 right-10 z-50 mb-4 flex h-14 w-14 animate-pulse_shadow items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg transition-all hover:scale-110 active:scale-95 lg:mb-10"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
