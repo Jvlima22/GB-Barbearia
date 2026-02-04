@@ -55,17 +55,21 @@ const AdminPage = async () => {
       <Header />
 
       <div className="container mx-auto px-5 py-6">
-        <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-white">
+        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-0">
+          <h1 className="text-[clamp(1.25rem,5vw,1.5rem)] font-bold text-white lg:text-2xl">
             Painel administrativo
           </h1>
-          <div className="flex gap-4">
-            <ManualSaleDialog users={users} products={products} />
-            <ManualBookingDialog
-              users={users}
-              services={services}
-              combos={combos}
-            />
+          <div className="flex flex-row gap-3 lg:gap-4">
+            <div className="flex-1">
+              <ManualSaleDialog users={users} products={products} />
+            </div>
+            <div className="flex-1">
+              <ManualBookingDialog
+                users={users}
+                services={services}
+                combos={combos}
+              />
+            </div>
           </div>
         </div>
 
@@ -93,30 +97,31 @@ const AdminPage = async () => {
         >
           <div className="flex flex-col gap-8">
             {/* METRICS */}
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {/* METRICS */}
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
               <Card className="border-white/10 bg-[#1A1A1A]">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-400">
-                    Total de agendamentos
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-1 lg:p-6 lg:pb-2">
+                  <CardTitle className="text-[10px] font-medium text-gray-400 lg:text-sm">
+                    Agendamentos
                   </CardTitle>
-                  <CalendarIcon className="h-4 w-4 text-primary" />
+                  <CalendarIcon className="h-3 w-3 text-[#3EABFD] lg:h-4 lg:w-4" />
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-white">
+                <CardContent className="p-3 pt-0 lg:p-6 lg:pt-0">
+                  <div className="text-lg font-bold text-white lg:text-2xl">
                     {bookings.length}
                   </div>
                 </CardContent>
               </Card>
 
               <Card className="border-white/10 bg-[#1A1A1A]">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-400">
-                    Total de produtos vendidos
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-1 lg:p-6 lg:pb-2">
+                  <CardTitle className="text-[10px] font-medium text-gray-400 lg:text-sm">
+                    Vendas
                   </CardTitle>
-                  <PackageIcon className="h-4 w-4 text-primary" />
+                  <PackageIcon className="h-3 w-3 text-[#3EABFD] lg:h-4 lg:w-4" />
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-white">
+                <CardContent className="p-3 pt-0 lg:p-6 lg:pt-0">
+                  <div className="text-lg font-bold text-white lg:text-2xl">
                     {purchases.reduce(
                       (acc: number, p: any) => acc + p.quantity,
                       0,
@@ -126,28 +131,30 @@ const AdminPage = async () => {
               </Card>
 
               <Card className="border-white/10 bg-[#1A1A1A]">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-400">
-                    Serviços ativos
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-1 lg:p-6 lg:pb-2">
+                  <CardTitle className="text-[10px] font-medium text-gray-400 lg:text-sm">
+                    Serviços
                   </CardTitle>
-                  <ScissorsIcon className="h-4 w-4 text-primary" />
+                  <ScissorsIcon className="h-3 w-3 text-[#3EABFD] lg:h-4 lg:w-4" />
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-white">
+                <CardContent className="p-3 pt-0 lg:p-6 lg:pt-0">
+                  <div className="text-lg font-bold text-white lg:text-2xl">
                     {services.length}
                   </div>
                 </CardContent>
               </Card>
 
               <Card className="border-white/10 bg-[#1A1A1A]">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-400">
-                    Receita total
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-1 lg:p-6 lg:pb-2">
+                  <CardTitle className="text-[10px] font-medium text-gray-400 lg:text-sm">
+                    Receita
                   </CardTitle>
-                  <span className="font-bold text-primary">R$</span>
+                  <span className="text-xs font-bold text-[#3EABFD] lg:text-base">
+                    R$
+                  </span>
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-white">
+                <CardContent className="p-3 pt-0 lg:p-6 lg:pt-0">
+                  <div className="truncate text-lg font-bold text-white lg:text-2xl">
                     {totalRevenue.toLocaleString("pt-BR", {
                       minimumFractionDigits: 2,
                     })}
@@ -168,21 +175,27 @@ const AdminPage = async () => {
                   {bookings.slice(0, 5).map((booking: any) => (
                     <div
                       key={booking.id}
-                      className="flex items-center justify-between rounded-lg border border-white/5 bg-[#222] p-3"
+                      className="flex items-center justify-between rounded-lg border border-white/5 bg-[#222] p-2 lg:p-3"
                     >
-                      <div className="flex flex-col">
-                        <span className="text-sm font-bold text-white">
+                      <div className="flex min-w-0 flex-1 flex-col pr-2">
+                        <span className="truncate text-xs font-bold text-white lg:text-sm">
                           {booking.user.name}
                         </span>
-                        <span className="text-xs text-gray-400">
+                        <span className="truncate text-[10px] text-gray-400 lg:text-xs">
                           {booking.service?.name ||
                             booking.combo?.name ||
                             "Sem descrição"}
                         </span>
+                        <Badge
+                          variant="outline"
+                          className="mt-1 flex w-fit border-green-500 px-1 py-0 text-[8px] text-green-500 lg:hidden"
+                        >
+                          Confirmado
+                        </Badge>
                       </div>
-                      <div className="flex items-center gap-6">
-                        <div className="flex items-center gap-5">
-                          <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2 lg:gap-6">
+                        <div className="flex flex-col items-end lg:flex-row lg:items-center lg:gap-5">
+                          <div className="hidden items-center gap-4 lg:flex">
                             <span className="text-sm text-white">
                               {format(booking.date, "dd/MM", {
                                 locale: ptBR,
@@ -194,12 +207,37 @@ const AdminPage = async () => {
                               })}
                             </span>
                           </div>
+
+                          <span className="text-xs font-bold text-white lg:text-sm">
+                            R${" "}
+                            {Number(
+                              booking.service?.price ||
+                                booking.combo?.price ||
+                                0,
+                            ).toLocaleString("pt-BR", {
+                              minimumFractionDigits: 2,
+                            })}
+                          </span>
+
                           <Badge
                             variant="outline"
-                            className="h-5 border-green-500 text-[10px] text-green-500"
+                            className="hidden h-5 border-green-500 text-[10px] text-green-500 lg:flex"
                           >
                             Confirmado
                           </Badge>
+
+                          <div className="flex items-center gap-1 text-[10px] text-gray-400 lg:hidden">
+                            <span>
+                              {format(booking.date, "dd/MM", {
+                                locale: ptBR,
+                              })}
+                            </span>
+                            <span>
+                              {format(booking.date, "HH:mm", {
+                                locale: ptBR,
+                              })}
+                            </span>
+                          </div>
                         </div>
                         <DeleteBookingButton bookingId={booking.id} />
                       </div>
@@ -224,19 +262,19 @@ const AdminPage = async () => {
                   {purchases.slice(0, 5).map((purchase: any) => (
                     <div
                       key={purchase.id}
-                      className="flex items-center justify-between rounded-lg border border-white/5 bg-[#222] p-3"
+                      className="flex items-center justify-between rounded-lg border border-white/5 bg-[#222] p-2 lg:p-3"
                     >
-                      <div className="flex flex-col">
-                        <span className="text-sm font-bold text-white">
+                      <div className="flex min-w-0 flex-1 flex-col pr-2">
+                        <span className="truncate text-xs font-bold text-white lg:text-sm">
                           {purchase.user.name}
                         </span>
-                        <span className="text-xs text-gray-400">
+                        <span className="truncate text-[10px] text-gray-400 lg:text-xs">
                           {purchase.product.name} ({purchase.quantity}x)
                         </span>
                       </div>
-                      <div className="flex items-center gap-6">
-                        <div className="flex items-center gap-5">
-                          <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2 lg:gap-6">
+                        <div className="flex flex-col items-end lg:flex-row lg:items-center lg:gap-5">
+                          <div className="hidden items-center gap-4 lg:flex">
                             <span className="text-sm text-white">
                               {format(purchase.createdAt, "dd/MM", {
                                 locale: ptBR,
@@ -248,7 +286,8 @@ const AdminPage = async () => {
                               })}
                             </span>
                           </div>
-                          <span className="text-sm font-bold text-white">
+
+                          <span className="text-xs font-bold text-white lg:text-sm">
                             R${" "}
                             {(
                               Number(purchase.product.price) * purchase.quantity
@@ -256,6 +295,19 @@ const AdminPage = async () => {
                               minimumFractionDigits: 2,
                             })}
                           </span>
+
+                          <div className="flex items-center gap-1 text-[10px] text-gray-400 lg:hidden">
+                            <span>
+                              {format(purchase.createdAt, "dd/MM", {
+                                locale: ptBR,
+                              })}
+                            </span>
+                            <span>
+                              {format(purchase.createdAt, "HH:mm", {
+                                locale: ptBR,
+                              })}
+                            </span>
+                          </div>
                         </div>
                         <DeletePurchaseButton purchaseId={purchase.id} />
                       </div>

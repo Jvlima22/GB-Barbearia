@@ -83,15 +83,17 @@ const ManualSaleDialog = ({ users, products }: ManualSaleDialogProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="gap-2 bg-green-600 text-white hover:bg-green-700">
-          <ShoppingCartIcon size={18} />
+        <Button className="w-full gap-2 bg-green-600 px-2 text-xs text-white hover:bg-green-700 lg:w-auto lg:gap-2 lg:px-4 lg:text-sm">
+          <ShoppingCartIcon className="h-5 w-5 lg:h-[18px] lg:w-[18px]" />
           Nova venda
         </Button>
       </DialogTrigger>
-      <DialogContent className="border-white/10 bg-[#1A1A1A] text-white sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Nova venda manual</DialogTitle>
-          <DialogDescription className="text-gray-400">
+      <DialogContent className="w-[calc(100%-1rem)] border-white/10 bg-[#1A1A1A] p-3 text-white sm:max-w-[425px] lg:p-6">
+        <DialogHeader className="space-y-0.5 lg:space-y-2">
+          <DialogTitle className="text-[clamp(0.95rem,4vw,1.125rem)] lg:text-xl">
+            Nova venda manual
+          </DialogTitle>
+          <DialogDescription className="text-[10px] text-gray-400 lg:text-sm">
             Registre a venda de um produto diretamente no sistema.
           </DialogDescription>
         </DialogHeader>
@@ -103,13 +105,15 @@ const ManualSaleDialog = ({ users, products }: ManualSaleDialogProps) => {
               name="userId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Cliente</FormLabel>
+                  <FormLabel className="text-[11px] lg:text-sm">
+                    Cliente
+                  </FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     value={field.value || undefined}
                   >
                     <FormControl>
-                      <SelectTrigger className="border-white/10 bg-[#222]">
+                      <SelectTrigger className="h-8 border-white/10 bg-[#222] text-xs lg:h-10 lg:text-sm">
                         <SelectValue placeholder="Selecione um cliente" />
                       </SelectTrigger>
                     </FormControl>
@@ -131,13 +135,15 @@ const ManualSaleDialog = ({ users, products }: ManualSaleDialogProps) => {
               name="productId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Produto</FormLabel>
+                  <FormLabel className="text-[11px] lg:text-sm">
+                    Produto
+                  </FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     value={field.value || undefined}
                   >
                     <FormControl>
-                      <SelectTrigger className="border-white/10 bg-[#222]">
+                      <SelectTrigger className="h-8 border-white/10 bg-[#222] text-xs lg:h-10 lg:text-sm">
                         <SelectValue placeholder="Selecione um produto" />
                       </SelectTrigger>
                     </FormControl>
@@ -159,12 +165,14 @@ const ManualSaleDialog = ({ users, products }: ManualSaleDialogProps) => {
               name="quantity"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Quantidade</FormLabel>
+                  <FormLabel className="text-[11px] lg:text-sm">
+                    Quantidade
+                  </FormLabel>
                   <FormControl>
                     <Input
                       type="number"
                       min={1}
-                      className="border-white/10 bg-[#222]"
+                      className="h-8 border-white/10 bg-[#222] text-xs lg:h-10 lg:text-sm"
                       {...field}
                     />
                   </FormControl>
@@ -183,24 +191,24 @@ const ManualSaleDialog = ({ users, products }: ManualSaleDialogProps) => {
               </div>
             </div>
 
-            <DialogFooter>
+            <DialogFooter className="flex-row gap-2">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setIsOpen(false)}
-                className="border-white/10 text-white"
+                className="h-9 flex-1 border-white/10 text-white lg:h-10 lg:flex-none"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 disabled={form.formState.isSubmitting}
-                className="bg-[#3EABFD] text-white hover:bg-[#2e8acb]"
+                className="h-9 flex-1 bg-[#3EABFD] text-white hover:bg-[#2e8acb] lg:h-10 lg:flex-none"
               >
                 {form.formState.isSubmitting && (
                   <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                Confirmar venda
+                Confirmar
               </Button>
             </DialogFooter>
           </form>

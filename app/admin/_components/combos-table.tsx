@@ -11,6 +11,7 @@ import { Button } from "@/app/_components/ui/button"
 import { Trash2Icon } from "lucide-react"
 import { deleteCombo } from "@/app/_actions/delete-combo"
 import { toast } from "sonner"
+import { useState } from "react"
 import UpsertComboDialog from "./upsert-combo-dialog"
 import {
   AlertDialog,
@@ -30,6 +31,9 @@ interface CombosTableProps {
 }
 
 const CombosTable = ({ combos, services }: CombosTableProps) => {
+  const [selectedCombo, setSelectedCombo] = useState<any | null>(null)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+
   const handleDeleteClick = async (id: string) => {
     try {
       await deleteCombo(id)
@@ -39,16 +43,118 @@ const CombosTable = ({ combos, services }: CombosTableProps) => {
     }
   }
 
+  const handleCardClick = (combo: any) => {
+    setSelectedCombo(combo)
+    setIsDialogOpen(true)
+  }
+
   return (
     <Card className="border-white/10 bg-[#1A1A1A]">
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-xl text-white">Gerenciar combos</CardTitle>
+        <CardTitle className="text-[clamp(1rem,4vw,1.25rem)] text-white lg:text-xl">
+          Gerenciar combos
+        </CardTitle>
         <div className="w-fit">
           <UpsertComboDialog services={services} />
         </div>
       </CardHeader>
       <CardContent>
-        <div className="overflow-x-auto">
+        {/* Mobile View - Cards */}
+        <div className="flex flex-col gap-4 lg:hidden">
+          {combos.map((combo) => (
+            <div
+              key={combo.id}
+              className="flex flex-col gap-3 rounded-lg border border-white/5 bg-[#222] p-4"
+            >
+              <div className="flex items-start justify-between">
+                <div
+                  className="flex flex-1 cursor-pointer flex-col gap-1"
+                  onClick={() => handleCardClick(combo)}
+                >
+                  <h3 className="font-bold text-white">{combo.name}</h3>
+                  <span className="text-sm font-semibold text-[#3EABFD]">
+                    {Number(combo.price).toLocaleString("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                    })}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    {combo.service1.name} + {combo.service2.name}
+                  </span>
+                </div>
+                <div
+                  className="flex gap-2"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-red-500"
+                      >
+                        <Trash2Icon className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="border-white/10 bg-[#1A1A1A] text-white">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-gray-400">
+                          Esta ação não pode ser desfeita. Isso excluirá
+                          permanentemente o combo &quot;{combo.name}&quot;.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel className="border-white/10 bg-[#222] text-white">
+                          Cancelar
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDeleteClick(combo.id)}
+                          className="bg-red-500 text-white hover:bg-red-600"
+                        >
+                          Excluir
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </div>
+              <p
+                className="line-clamp-1 cursor-pointer text-sm text-gray-400"
+                onClick={() => handleCardClick(combo)}
+              >
+                {combo.description}
+              </p>
+            </div>
+          ))}
+          {combos.length === 0 && (
+            <div className="py-10 text-center text-gray-400">
+              Nenhum combo cadastrado.
+            </div>
+          )}
+        </div>
+
+        {/* Mobile Edit Dialog */}
+        {selectedCombo && (
+          <UpsertComboDialog
+            services={services}
+            defaultValues={{
+              id: selectedCombo.id,
+              name: selectedCombo.name,
+              description: selectedCombo.description,
+              imageUrl: selectedCombo.imageUrl,
+              price: Number(selectedCombo.price),
+              service1Id: selectedCombo.service1Id,
+              service2Id: selectedCombo.service2Id,
+            }}
+            isOpen={isDialogOpen}
+            onOpenChange={setIsDialogOpen}
+            hideTrigger={true}
+          />
+        )}
+
+        {/* Desktop View - Table */}
+        <div className="hidden overflow-x-auto lg:block">
           <table className="w-full text-left text-sm text-gray-400">
             <thead className="bg-[#222] text-xs uppercase text-gray-500">
               <tr>

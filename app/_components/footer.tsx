@@ -7,12 +7,14 @@ const Footer = () => {
     <footer>
       <Card>
         <CardContent className="px-5 py-6">
-          <div className="flex flex-nowrap items-center justify-between sm:flex-wrap sm:justify-center sm:gap-2">
-            <p className="text-sm text-gray-400">
-              © 2025 Copyright <span className="font-bold">TLS Barber.</span>
+          <div className="flex flex-col items-center justify-center gap-2 lg:flex lg:flex-row lg:flex-nowrap lg:items-center lg:justify-center lg:gap-2">
+            <p className="text-[clamp(10px,3.5vw,14px)] text-gray-400 lg:text-sm">
+              © 2025 Copyright <span className="font-bold">TGL Barber.</span>
             </p>
             <div className="flex items-center gap-1">
-              <span className="text-sm text-gray-400">Desenvolvido por</span>
+              <span className="text-[clamp(10px,3.5vw,14px)] text-gray-400 lg:text-sm">
+                Desenvolvido por
+              </span>
               <Link
                 href="https://www.tglsolutions.com.br"
                 target="_blank"
@@ -23,6 +25,7 @@ const Footer = () => {
                   src="/logo-tgl.svg"
                   height={18}
                   width={120}
+                  className="w-[clamp(80px,25vw,120px)] lg:w-[120px]"
                 />
               </Link>
             </div>

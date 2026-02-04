@@ -30,6 +30,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogTrigger,
   DialogFooter,
 } from "@/app/_components/ui/dialog"
@@ -144,11 +145,13 @@ const OperatingHoursManager = ({
       <Card className="border-white/10 bg-[#1A1A1A]">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-white">
-            <ClockIcon className="h-5 w-5 text-primary" />
-            Padrão Semanal
+            <ClockIcon className="h-4 w-4 text-primary lg:h-5 lg:w-5" />
+            <span className="text-[clamp(1rem,4vw,1.25rem)]">
+              Padrão Semanal
+            </span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col gap-4">
+        <CardContent className="flex flex-col gap-2 lg:gap-4">
           {DAYS_OF_WEEK.map((dayName, index) => {
             const dayData = localOperatingDays.find(
               (d) => d.dayOfWeek === index,
@@ -174,10 +177,10 @@ const OperatingHoursManager = ({
             return (
               <div
                 key={index}
-                className="flex items-center justify-between rounded-lg border border-white/5 bg-[#222] p-4"
+                className="flex items-center justify-between rounded-lg border border-white/5 bg-[#222] p-3 lg:p-4"
               >
-                <div className="flex min-w-[120px] flex-col gap-1">
-                  <span className="text-sm font-bold text-white">
+                <div className="flex min-w-[100px] flex-col gap-0.5 lg:min-w-[120px] lg:gap-1">
+                  <span className="text-xs font-bold text-white lg:text-sm">
                     {dayName}
                   </span>
                   <div className="flex items-center gap-2">
@@ -189,24 +192,28 @@ const OperatingHoursManager = ({
                         handleDayUpdate(updated)
                       }}
                       className={cn(
-                        "flex h-5 w-5 cursor-pointer items-center justify-center rounded border transition-all",
+                        "flex h-4 w-4 cursor-pointer items-center justify-center rounded border transition-all lg:h-5 lg:w-5",
                         dayData.isOpen
                           ? "border-primary bg-primary text-white"
                           : "border-white/20 bg-transparent",
                       )}
                     >
-                      {dayData.isOpen && <Check className="h-3.5 w-3.5" />}
+                      {dayData.isOpen && (
+                        <Check className="h-3 w-3 lg:h-3.5 lg:w-3.5" />
+                      )}
                     </div>
-                    <span className="text-xs text-gray-400">
+                    <span className="text-[10px] text-gray-400 lg:text-xs">
                       {dayData.isOpen ? "Aberto" : "Fechado"}
                     </span>
                   </div>
                 </div>
 
                 {dayData.isOpen && (
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2">
-                      <Label className="text-xs text-gray-400">Das</Label>
+                  <div className="flex items-center gap-2 lg:gap-4">
+                    <div className="flex items-center gap-1.5 lg:gap-2">
+                      <Label className="text-[10px] text-gray-400 lg:text-xs">
+                        Das
+                      </Label>
                       <Input
                         value={dayData.startTime}
                         onChange={(e) => {
@@ -214,12 +221,14 @@ const OperatingHoursManager = ({
                           const updated = updateLocalDay({ startTime: val })
                           if (val.length === 5) handleDayUpdate(updated)
                         }}
-                        className="h-8 w-20 bg-[#1A1A1A] text-xs text-white"
+                        className="h-7 w-[50px] bg-[#1A1A1A] px-1 text-center text-[10px] text-white lg:h-8 lg:w-20 lg:px-3 lg:text-left lg:text-xs"
                         maxLength={5}
                       />
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Label className="text-xs text-gray-400">até</Label>
+                    <div className="flex items-center gap-1.5 lg:gap-2">
+                      <Label className="text-[10px] text-gray-400 lg:text-xs">
+                        até
+                      </Label>
                       <Input
                         value={dayData.endTime}
                         onChange={(e) => {
@@ -227,7 +236,7 @@ const OperatingHoursManager = ({
                           const updated = updateLocalDay({ endTime: val })
                           if (val.length === 5) handleDayUpdate(updated)
                         }}
-                        className="h-8 w-20 bg-[#1A1A1A] text-xs text-white"
+                        className="h-7 w-[50px] bg-[#1A1A1A] px-1 text-center text-[10px] text-white lg:h-8 lg:w-20 lg:px-3 lg:text-left lg:text-xs"
                         maxLength={5}
                       />
                     </div>
@@ -241,28 +250,39 @@ const OperatingHoursManager = ({
 
       {/* EXCEPTIONS */}
       <Card className="border-white/10 bg-[#1A1A1A]">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-white">
-            <CalendarIcon className="h-5 w-5 text-primary" />
-            Exceções do Calendário (Feriados/Datas Específicas)
+        <CardHeader className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <CardTitle className="flex items-start gap-2 text-white lg:items-center">
+            <CalendarIcon className="mt-1 h-4 w-4 text-primary lg:mt-0 lg:h-5 lg:w-5" />
+            <span className="text-[clamp(1rem,4vw,1.25rem)] leading-tight">
+              Exceções do Calendário
+              <span className="block text-xs font-normal text-gray-400 lg:inline lg:text-base">
+                {" "}
+                (Feriados/Datas Específicas)
+              </span>
+            </span>
           </CardTitle>
           <Dialog
             open={isExceptionDialogOpen}
             onOpenChange={setIsExceptionDialogOpen}
           >
             <DialogTrigger asChild>
-              <Button className="gap-2">
-                <PlusIcon className="h-4 w-4" />
+              <Button className="h-8 w-full gap-2 text-xs lg:h-10 lg:w-auto lg:text-sm">
+                <PlusIcon className="h-3 w-3 lg:h-4 lg:w-4" />
                 Adicionar Exceção
               </Button>
             </DialogTrigger>
-            <DialogContent className="border-white/10 bg-[#1D1D1D] text-white">
-              <DialogHeader>
-                <DialogTitle>Nova Exceção</DialogTitle>
+            <DialogContent className="w-[calc(100%-1rem)] border-white/10 bg-[#1D1D1D] p-3 text-white lg:w-full lg:max-w-lg lg:p-6">
+              <DialogHeader className="space-y-0.5 lg:space-y-2">
+                <DialogTitle className="text-[clamp(0.95rem,4vw,1.125rem)] lg:text-xl">
+                  Nova exceção
+                </DialogTitle>
+                <DialogDescription className="text-[10px] text-gray-400 lg:text-sm">
+                  Configure uma data específica com horários diferentes.
+                </DialogDescription>
               </DialogHeader>
-              <div className="flex flex-col gap-4 py-4">
-                <div className="flex flex-col gap-2">
-                  <Label>Data</Label>
+              <div className="flex flex-col gap-3 py-3 lg:gap-4 lg:py-4">
+                <div className="flex flex-col gap-1.5 lg:gap-2">
+                  <Label className="text-[11px] lg:text-sm">Data</Label>
                   <PopoverPrimitive.Root
                     open={isCalendarOpen}
                     onOpenChange={setIsCalendarOpen}
@@ -271,7 +291,7 @@ const OperatingHoursManager = ({
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "h-10 w-full border-white/10 bg-[#222] pl-3 text-left font-normal hover:bg-[#333] hover:text-white",
+                          "h-8 w-full border-white/10 bg-[#222] pl-3 text-left text-xs font-normal hover:bg-[#333] hover:text-white lg:h-10 lg:text-sm",
                           !selectedDate && "text-muted-foreground",
                         )}
                       >
@@ -280,7 +300,7 @@ const OperatingHoursManager = ({
                         ) : (
                           <span>Selecione uma data</span>
                         )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        <CalendarIcon className="ml-auto h-3 w-3 opacity-50 lg:h-4 lg:w-4" />
                       </Button>
                     </PopoverPrimitive.Trigger>
                     <PopoverPrimitive.Content
@@ -305,30 +325,34 @@ const OperatingHoursManager = ({
                   </PopoverPrimitive.Root>
                 </div>
 
-                <div className="flex flex-col gap-2">
-                  <Label>Descrição (opcional)</Label>
+                <div className="flex flex-col gap-1.5 lg:gap-2">
+                  <Label className="text-[11px] lg:text-sm">
+                    Descrição (opcional)
+                  </Label>
                   <Input
                     placeholder="Ex: Natal, Reforma..."
                     value={exceptionDescription}
                     onChange={(e) => setExceptionDescription(e.target.value)}
-                    className="border-white/10 bg-[#222]"
+                    className="h-8 border-white/10 bg-[#222] text-sm lg:h-10"
                   />
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 py-1">
                   <div
                     onClick={() => setExceptionIsOpen(!exceptionIsOpen)}
                     className={cn(
-                      "flex h-5 w-5 cursor-pointer items-center justify-center rounded border transition-all",
+                      "flex h-4 w-4 cursor-pointer items-center justify-center rounded border transition-all lg:h-5 lg:w-5",
                       exceptionIsOpen
                         ? "border-primary bg-primary text-white"
                         : "border-white/20 bg-transparent",
                     )}
                   >
-                    {exceptionIsOpen && <Check className="h-3.5 w-3.5" />}
+                    {exceptionIsOpen && (
+                      <Check className="h-3 w-3 lg:h-3.5 lg:w-3.5" />
+                    )}
                   </div>
                   <Label
-                    className="cursor-pointer"
+                    className="cursor-pointer text-xs lg:text-sm"
                     onClick={() => setExceptionIsOpen(!exceptionIsOpen)}
                   >
                     Barbearia estará aberta nesta data?
@@ -336,40 +360,46 @@ const OperatingHoursManager = ({
                 </div>
 
                 {exceptionIsOpen && (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-2">
-                      <Label>Início</Label>
+                  <div className="grid grid-cols-2 gap-3 lg:gap-4">
+                    <div className="flex flex-col gap-1.5 lg:gap-2">
+                      <Label className="text-[11px] lg:text-sm">Início</Label>
                       <Input
                         value={exceptionStartTime}
                         onChange={(e) =>
                           setExceptionStartTime(maskTime(e.target.value))
                         }
                         maxLength={5}
-                        className="border-white/10 bg-[#222]"
+                        className="h-8 border-white/10 bg-[#222] text-sm lg:h-10"
                       />
                     </div>
-                    <div className="flex flex-col gap-2">
-                      <Label>Fim</Label>
+                    <div className="flex flex-col gap-1.5 lg:gap-2">
+                      <Label className="text-[11px] lg:text-sm">Fim</Label>
                       <Input
                         value={exceptionEndTime}
                         onChange={(e) =>
                           setExceptionEndTime(maskTime(e.target.value))
                         }
                         maxLength={5}
-                        className="border-white/10 bg-[#222]"
+                        className="h-8 border-white/10 bg-[#222] text-sm lg:h-10"
                       />
                     </div>
                   </div>
                 )}
               </div>
-              <DialogFooter>
+              <DialogFooter className="flex-row gap-2 lg:flex-row">
                 <Button
                   variant="outline"
                   onClick={() => setIsExceptionDialogOpen(false)}
+                  className="h-9 flex-1 border-white/10 lg:h-10 lg:flex-none"
                 >
                   Cancelar
                 </Button>
-                <Button onClick={handleAddException}>Salvar Exceção</Button>
+                <Button
+                  onClick={handleAddException}
+                  className="h-9 flex-1 bg-[#3EABFD] text-white hover:bg-[#2e8acb] lg:h-10 lg:flex-none"
+                >
+                  Salvar exceção
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -378,29 +408,29 @@ const OperatingHoursManager = ({
           {operatingExceptions.map((exception) => (
             <div
               key={exception.id}
-              className="flex items-center justify-between rounded-lg border border-white/5 bg-[#222] p-4"
+              className="flex items-center justify-between rounded-lg border border-white/5 bg-[#222] p-3 lg:p-4"
             >
-              <div className="flex flex-col">
-                <span className="text-sm font-bold text-white">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-xs font-bold text-white lg:text-sm">
                   {format(exception.date, "dd 'de' MMMM", { locale: ptBR })}
                 </span>
-                <span className="text-xs text-gray-400">
+                <span className="text-[10px] text-gray-400 lg:text-xs">
                   {exception.description || "Sem descrição"}
                 </span>
               </div>
 
-              <div className="flex items-center gap-6">
-                <div className="flex flex-col items-end">
+              <div className="flex items-center gap-3 lg:gap-6">
+                <div className="flex flex-col items-end gap-0.5">
                   <span
                     className={cn(
-                      "text-xs font-bold",
+                      "text-[10px] font-bold lg:text-xs",
                       exception.isOpen ? "text-green-500" : "text-red-500",
                     )}
                   >
                     {exception.isOpen ? "Aberto" : "Fechado"}
                   </span>
                   {exception.isOpen && (
-                    <span className="text-xs text-gray-400">
+                    <span className="text-[10px] text-gray-400 lg:text-xs">
                       {exception.startTime} - {exception.endTime}
                     </span>
                   )}
@@ -408,10 +438,10 @@ const OperatingHoursManager = ({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="text-red-500 hover:bg-red-500/10"
+                  className="h-8 w-8 text-red-500 hover:bg-red-500/10 lg:h-10 lg:w-10"
                   onClick={() => handleDeleteException(exception.id)}
                 >
-                  <TrashIcon className="h-4 w-4" />
+                  <TrashIcon className="h-3 w-3 lg:h-4 lg:w-4" />
                 </Button>
               </div>
             </div>

@@ -37,6 +37,7 @@ const ProductItem = ({ product }: ProductItemProps) => {
             <Image
               alt={product.name}
               fill
+              sizes="(max-width: 768px) 167px, 185px"
               className="rounded-2xl object-cover"
               src={product.imageUrl}
             />

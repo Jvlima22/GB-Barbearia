@@ -47,7 +47,7 @@ const Header = () => {
           <div className="hidden items-center lg:flex">
             <Button
               variant="default"
-              className="mr-2 flex justify-start gap-2 rounded-xl bg-[#102332] hover:bg-[#102332]"
+              className="mr-2 flex justify-start gap-2 rounded-xl border border-white/10 bg-transparent hover:bg-white/10"
               onClick={handleBookingsClick}
             >
               <CalendarIcon className="h-4 w-4 text-white" />
@@ -58,7 +58,7 @@ const Header = () => {
               <SheetTrigger asChild>
                 <Button
                   size="icon"
-                  style={{ backgroundColor: "#102332", borderRadius: "10px" }}
+                  className="mr-2 flex justify-center gap-2 rounded-xl border border-white/10 bg-transparent hover:bg-white/10"
                 >
                   <MenuIcon color="#ffffff" />
                 </Button>
@@ -74,7 +74,7 @@ const Header = () => {
                 <Button
                   size="icon"
                   variant="outline"
-                  className="border border-white"
+                  className="mr-2 flex justify-center gap-2 rounded-xl border border-white/10 bg-transparent hover:bg-white/10"
                 >
                   <MenuIcon color="#ffffff" />
                 </Button>

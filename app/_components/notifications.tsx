@@ -163,7 +163,7 @@ const Notifications = () => {
         <Button
           variant="ghost"
           size="icon"
-          className="relative mr-2 h-10 w-10 rounded-xl bg-[#102332] hover:bg-[#102332]/80"
+          className="relative mr-2 h-10 w-10 rounded-xl border border-white/10 bg-transparent hover:bg-white/10"
         >
           <BellIcon className="h-5 w-5 text-white" />
           {hasNew && (

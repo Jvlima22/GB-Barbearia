@@ -85,8 +85,8 @@ const BookingItem = ({ booking, settings }: BookingItemProps) => {
             {/* ESQUERDA */}
             <div className="flex flex-col gap-2 py-5 pl-5">
               <Badge
-                className="w-fit text-white"
-                variant={isConfirmed ? "default" : "secondary"}
+                className={`w-fit ${isConfirmed ? "border-[#22c55e] text-[#22c55e]" : "border-gray-400 text-gray-400"}`}
+                variant="outline"
               >
                 {isConfirmed ? "Confirmado" : "Finalizado"}
               </Badge>
@@ -130,6 +130,7 @@ const BookingItem = ({ booking, settings }: BookingItemProps) => {
             alt={`Mapa da barbearia ${barbershop.name}`}
             src="/map.svg"
             fill
+            sizes="(max-width: 768px) 100vw, 400px"
             className="rounded-xl object-cover"
           />
 
@@ -147,18 +148,12 @@ const BookingItem = ({ booking, settings }: BookingItemProps) => {
         </div>
 
         <div className="mt-6">
-          <Badge
-            className="w-fit text-white"
-            variant={isConfirmed ? "default" : "secondary"}
-          >
-            {isConfirmed ? "Confirmado" : "Finalizado"}
-          </Badge>
-
           <div className="mb-3 mt-6 text-white">
             <BookingSummary
               barbershop={barbershop}
               service={(booking.service || (booking as any).combo) as any}
               selectedDate={booking.date}
+              isConfirmed={isConfirmed}
             />
           </div>
 
