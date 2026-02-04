@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { ptBR } from "date-fns/locale"
 import { format } from "date-fns"
-import { CalendarIcon, Loader2Icon, PlusIcon } from "lucide-react"
+import { CalendarIcon, ChevronDown, Loader2Icon, PlusIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { Button } from "@/app/_components/ui/button"
@@ -53,6 +53,7 @@ const ManualBookingDialog = ({
 }: ManualBookingDialogProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
+  const [isTimeOpen, setIsTimeOpen] = useState(false)
   const form = useForm<ManualBookingSchema>({
     resolver: zodResolver(manualBookingSchema),
     defaultValues: {
@@ -306,23 +307,45 @@ const ManualBookingDialog = ({
                     <FormLabel className="text-[11px] lg:text-sm">
                       Horário
                     </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value || undefined}
+                    <PopoverPrimitive.Root
+                      open={isTimeOpen}
+                      onOpenChange={setIsTimeOpen}
                     >
-                      <FormControl>
-                        <SelectTrigger className="h-8 border-white/10 bg-[#222] text-xs lg:h-10 lg:text-sm">
-                          <SelectValue placeholder="Horário" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="h-[200px] border-white/10 bg-[#1A1A1A] text-white">
-                        {getTimeSlots().map((time) => (
-                          <SelectItem key={time} value={time}>
-                            {time}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      <PopoverPrimitive.Trigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "h-8 w-full justify-between border-white/10 bg-[#222] px-3 text-left text-xs font-normal hover:bg-[#333] hover:text-white lg:h-10 lg:text-sm",
+                              !field.value && "text-muted-foreground",
+                            )}
+                          >
+                            {field.value || "Horário"}
+                            <ChevronDown className="h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverPrimitive.Trigger>
+                      <PopoverPrimitive.Content
+                        className="z-50 max-h-[200px] w-[var(--radix-popover-trigger-width)] overflow-y-auto rounded-md border border-white/10 bg-[#1A1A1A] p-0 shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
+                        align="start"
+                      >
+                        <div className="p-1">
+                          {getTimeSlots().map((time) => (
+                            <Button
+                              key={time}
+                              variant="ghost"
+                              className="w-full justify-start text-left text-xs text-white hover:bg-[#3EABFD] hover:text-white lg:text-sm"
+                              onClick={() => {
+                                field.onChange(time)
+                                setIsTimeOpen(false)
+                              }}
+                            >
+                              {time}
+                            </Button>
+                          ))}
+                        </div>
+                      </PopoverPrimitive.Content>
+                    </PopoverPrimitive.Root>
                     <FormMessage />
                   </FormItem>
                 )}
