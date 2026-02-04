@@ -208,7 +208,7 @@ const ManualSaleDialog = ({ users, products }: ManualSaleDialogProps) => {
                 {form.formState.isSubmitting && (
                   <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                Confirmar
+                Confirmar venda
               </Button>
             </DialogFooter>
           </form>

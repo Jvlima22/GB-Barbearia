@@ -181,6 +181,7 @@ const ManualBookingDialog = ({
                       Serviço
                     </FormLabel>
                     <Select
+                      disabled={!!form.watch("comboId")}
                       onValueChange={(value) => {
                         field.onChange(value)
                         form.setValue("comboId", undefined)
@@ -213,6 +214,7 @@ const ManualBookingDialog = ({
                       Combo
                     </FormLabel>
                     <Select
+                      disabled={!!form.watch("serviceId")}
                       onValueChange={(value) => {
                         field.onChange(value)
                         form.setValue("serviceId", undefined)
@@ -254,6 +256,7 @@ const ManualBookingDialog = ({
                       <PopoverPrimitive.Trigger asChild>
                         <FormControl>
                           <Button
+                            type="button"
                             variant={"outline"}
                             className={cn(
                               "h-8 w-full border-white/10 bg-[#222] pl-3 text-left text-xs font-normal hover:bg-[#333] hover:text-white lg:h-10 lg:text-sm",
@@ -314,6 +317,7 @@ const ManualBookingDialog = ({
                       <PopoverPrimitive.Trigger asChild>
                         <FormControl>
                           <Button
+                            type="button"
                             variant={"outline"}
                             className={cn(
                               "h-8 w-full justify-between border-white/10 bg-[#222] px-3 text-left text-xs font-normal hover:bg-[#333] hover:text-white lg:h-10 lg:text-sm",
@@ -332,6 +336,7 @@ const ManualBookingDialog = ({
                         <div className="p-1">
                           {getTimeSlots().map((time) => (
                             <Button
+                              type="button"
                               key={time}
                               variant="ghost"
                               className="w-full justify-start text-left text-xs text-white hover:bg-[#3EABFD] hover:text-white lg:text-sm"
@@ -374,7 +379,7 @@ const ManualBookingDialog = ({
                 {form.formState.isSubmitting && (
                   <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                Criar
+                Agendar
               </Button>
             </DialogFooter>
           </form>
