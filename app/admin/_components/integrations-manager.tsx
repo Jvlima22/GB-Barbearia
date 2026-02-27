@@ -144,12 +144,12 @@ const IntegrationsManager = ({ banks }: IntegrationsManagerProps) => {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between lg:gap-0">
         <div>
-          <h2 className="text-xl font-bold text-white">
+          <h2 className="text-lg font-bold text-white lg:text-xl">
             Integrações Bancárias
           </h2>
-          <p className="text-sm text-gray-400">
+          <p className="text-xs text-gray-400 lg:text-sm">
             Conecte as suas contas para receber os pagamentos diretamente. O
             dinheiro cai direto na sua conta, em seu CNPJ/CPF, sem
             intermediários.
@@ -157,7 +157,7 @@ const IntegrationsManager = ({ banks }: IntegrationsManagerProps) => {
         </div>
 
         {/* View Toggle */}
-        <div className="flex rounded-lg border border-white/10 bg-[#1A1A1A] p-1">
+        <div className="flex w-fit self-end rounded-lg border border-white/10 bg-[#1A1A1A] p-1 lg:self-auto">
           <button
             onClick={() => setViewMode("grid")}
             className={`rounded-md p-2 transition-colors ${viewMode === "grid" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}
@@ -187,10 +187,10 @@ const IntegrationsManager = ({ banks }: IntegrationsManagerProps) => {
             return (
               <div
                 key={bank.id}
-                className="flex items-center justify-between rounded-xl border border-white/10 bg-[#1A1A1A] p-4 transition-colors hover:border-primary/50"
+                className="flex flex-row items-center justify-between gap-2 rounded-xl border border-white/10 bg-[#1A1A1A] p-3 transition-colors hover:border-primary/50 lg:p-4"
               >
-                <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg">
+                <div className="flex min-w-0 flex-1 items-center gap-2 lg:gap-4">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg lg:h-10 lg:w-10">
                     <img
                       src={getBankLogo(bank.provider, bank.imageUrl)}
                       alt={bank.name}
@@ -202,24 +202,28 @@ const IntegrationsManager = ({ banks }: IntegrationsManagerProps) => {
                         )
                       }}
                     />
-                    <WalletIcon className="hidden h-5 w-5 text-primary" />
+                    <WalletIcon className="hidden h-4 w-4 text-primary lg:h-5 lg:w-5" />
                   </div>
-                  <div className="flex flex-col">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-bold text-white">{bank.name}</h3>
+                  <div className="flex min-w-0 flex-1 flex-col">
+                    <div className="flex items-center gap-1.5 lg:gap-2">
+                      <h3 className="truncate text-xs font-bold text-white lg:text-base">
+                        {bank.name}
+                      </h3>
                       {hasCredentials && (
-                        <CheckCircle2Icon className="h-4 w-4 text-green-500" />
+                        <CheckCircle2Icon className="h-3.5 w-3.5 shrink-0 text-green-500 lg:h-4 lg:w-4" />
                       )}
                     </div>
-                    <p className="text-sm text-gray-400">
+                    <p className="truncate text-[9px] text-gray-400 lg:text-sm">
                       {hasCredentials
                         ? `Conectado em ${bank.credentials[0]?.environment === "PRODUCTION" ? "Produção" : "Testes"}`
-                        : "Nenhuma conta vinculada"}
+                        : "Nenhuma vinculada"}
                     </p>
                   </div>
                 </div>
                 <Button
                   variant={hasCredentials ? "outline" : "default"}
+                  size="sm"
+                  className="h-7 w-auto shrink-0 px-2.5 text-[10px] lg:h-9 lg:px-4 lg:text-sm"
                   onClick={() => handleOpenBank(bank)}
                   disabled={!bank.isActive} // In case some banks are "coming soon"
                 >
@@ -235,11 +239,11 @@ const IntegrationsManager = ({ banks }: IntegrationsManagerProps) => {
           return (
             <div
               key={bank.id}
-              className="flex flex-col gap-4 rounded-xl border border-white/10 bg-[#1A1A1A] p-6 transition-colors hover:border-primary/50"
+              className="flex flex-col gap-3 rounded-xl border border-white/10 bg-[#1A1A1A] p-4 transition-colors hover:border-primary/50 lg:gap-4 lg:p-6"
             >
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg">
+                <div className="flex items-center gap-2 lg:gap-3">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg lg:h-10 lg:w-10">
                     <img
                       src={getBankLogo(bank.provider, bank.imageUrl)}
                       alt={bank.name}
@@ -251,28 +255,31 @@ const IntegrationsManager = ({ banks }: IntegrationsManagerProps) => {
                         )
                       }}
                     />
-                    <WalletIcon className="hidden h-5 w-5 text-primary" />
+                    <WalletIcon className="hidden h-4 w-4 text-primary lg:h-5 lg:w-5" />
                   </div>
-                  <h3 className="font-bold text-white">{bank.name}</h3>
+                  <h3 className="text-sm font-bold leading-tight text-white lg:text-base">
+                    {bank.name}
+                  </h3>
                 </div>
                 {hasCredentials && (
-                  <CheckCircle2Icon className="h-6 w-6 text-green-500" />
+                  <CheckCircle2Icon className="h-4 w-4 text-green-500 lg:h-6 lg:w-6" />
                 )}
               </div>
-              <p className="min-h-[40px] text-sm text-gray-400">
+              <p className="min-h-[20px] text-xs leading-snug text-gray-400 lg:min-h-[40px] lg:text-sm">
                 {hasCredentials
-                  ? `Conectado em ambiente de ${bank.credentials[0]?.environment === "PRODUCTION" ? "Produção" : "Testes"}.`
+                  ? `Em ambiente de ${bank.credentials[0]?.environment === "PRODUCTION" ? "Produção" : "Testes"}.`
                   : "Nenhuma conta vinculada."}
               </p>
               <Button
                 variant={hasCredentials ? "outline" : "default"}
-                className="mt-2 w-full"
+                size="sm"
+                className="mt-1 h-8 w-full text-xs lg:mt-2 lg:h-9 lg:text-sm"
                 onClick={() => handleOpenBank(bank)}
                 disabled={!bank.isActive} // In case some banks are "coming soon"
               >
                 {bank.isActive
                   ? hasCredentials
-                    ? "Atualizar Credenciais"
+                    ? "Atualizar Chave"
                     : "Conectar"
                   : "Em Breve"}
               </Button>
@@ -282,57 +289,65 @@ const IntegrationsManager = ({ banks }: IntegrationsManagerProps) => {
         {/* Custom Gateway Option */}
         {viewMode === "grid" ? (
           <div
-            className="flex cursor-pointer flex-col gap-4 rounded-xl border border-dashed border-white/20 bg-[#1A1A1A]/50 p-6 transition-colors hover:border-primary/50"
+            className="flex cursor-pointer flex-col gap-3 rounded-xl border border-dashed border-white/20 bg-[#1A1A1A]/50 p-4 transition-colors hover:border-primary/50 lg:gap-4 lg:p-6"
             onClick={() =>
               handleOpenBank({
-                name: "Gateway Customizado (API/Webhook)",
+                name: "Gateway Customizado",
                 provider: "CUSTOM",
               })
             }
           >
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/20">
-                <GlobeIcon className="h-5 w-5 text-primary" />
+            <div className="flex items-center gap-2 lg:gap-3">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/20 lg:h-10 lg:w-10">
+                <GlobeIcon className="h-4 w-4 text-primary lg:h-5 lg:w-5" />
               </div>
-              <h3 className="font-bold text-white">Integração Universal</h3>
+              <h3 className="text-sm font-bold leading-tight text-white lg:text-base">
+                Integração Universal
+              </h3>
             </div>
-            <p className="min-h-[40px] text-sm text-gray-400">
-              Conecte com qualquer gateway de pagamento do mundo (Pagar.me,
-              Asaas, PagBank) via Webhook genérico.
+            <p className="min-h-[35px] text-xs leading-snug text-gray-400 lg:min-h-[40px] lg:text-sm">
+              Conecte com gateways do mundo (Pagar.me, Asaas, PagBank) via
+              Webhook genérico.
             </p>
             <Button
               variant="outline"
-              className="mt-2 w-full border-primary/50 text-primary hover:bg-primary/10"
+              size="sm"
+              className="mt-1 h-8 w-full border-primary/50 text-xs text-primary hover:bg-primary/10 lg:mt-2 lg:h-9 lg:text-sm"
             >
-              <PlusIcon className="mr-2 h-4 w-4" /> Configurar Webhook
+              <PlusIcon className="mr-1.5 h-3 w-3 lg:mr-2 lg:h-4 lg:w-4" />{" "}
+              Configurar
             </Button>
           </div>
         ) : (
           <div
-            className="flex cursor-pointer items-center justify-between rounded-xl border border-dashed border-white/20 bg-[#1A1A1A]/50 p-4 transition-colors hover:border-primary/50"
+            className="flex cursor-pointer flex-row items-center justify-between gap-2 rounded-xl border border-dashed border-white/20 bg-[#1A1A1A]/50 p-3 transition-colors hover:border-primary/50 lg:p-4"
             onClick={() =>
               handleOpenBank({
-                name: "Gateway Customizado (API/Webhook)",
+                name: "Gateway Customizado",
                 provider: "CUSTOM",
               })
             }
           >
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/20">
-                <GlobeIcon className="h-5 w-5 text-primary" />
+            <div className="flex min-w-0 flex-1 items-center gap-2 lg:gap-4">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/20 lg:h-10 lg:w-10">
+                <GlobeIcon className="h-4 w-4 text-primary lg:h-5 lg:w-5" />
               </div>
-              <div className="flex flex-col">
-                <h3 className="font-bold text-white">Integração Universal</h3>
-                <p className="text-sm text-gray-400">
-                  Conecte com Asaas, Pagar.me, PagBank, Vindi via Webhook
+              <div className="flex min-w-0 flex-1 flex-col">
+                <h3 className="truncate text-xs font-bold text-white lg:text-base">
+                  Integração Universal
+                </h3>
+                <p className="truncate text-[9px] text-gray-400 lg:text-sm">
+                  Conecte com Asaas, Pagar.me, PagBank, Vindi
                 </p>
               </div>
             </div>
             <Button
               variant="outline"
-              className="border-primary/50 text-primary hover:bg-primary/10"
+              size="sm"
+              className="h-7 w-auto shrink-0 border-primary/50 px-2.5 text-[10px] text-primary hover:bg-primary/10 lg:h-9 lg:px-4 lg:text-sm"
             >
-              <PlusIcon className="mr-2 h-4 w-4" /> Configurar Webhook
+              <PlusIcon className="mr-1 hidden h-3 w-3 lg:mr-2 lg:inline lg:h-4 lg:w-4" />{" "}
+              Configurar
             </Button>
           </div>
         )}
@@ -456,7 +471,7 @@ const IntegrationsManager = ({ banks }: IntegrationsManagerProps) => {
               Cancelar
             </Button>
             <Button onClick={handleSave} disabled={isLoading}>
-              {isLoading ? "Salvando..." : "Salvar Segurança"}
+              {isLoading ? "Salvando..." : "Salvar"}
             </Button>
           </div>
         </DialogContent>
