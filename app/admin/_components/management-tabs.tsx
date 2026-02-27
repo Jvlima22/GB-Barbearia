@@ -14,8 +14,10 @@ import {
   StarsIcon,
   SettingsIcon,
   ClockIcon,
+  CreditCardIcon,
 } from "lucide-react"
 import OperatingHoursManager from "./operating-hours-manager"
+import IntegrationsManager from "./integrations-manager"
 
 interface ManagementTabsProps {
   services: Service[]
@@ -24,6 +26,7 @@ interface ManagementTabsProps {
   settings: Settings
   operatingDays: any[]
   operatingExceptions: any[]
+  banks: any[]
   children: React.ReactNode // Dashboard content
 }
 
@@ -34,6 +37,7 @@ const ManagementTabs = ({
   settings,
   operatingDays,
   operatingExceptions,
+  banks,
   children,
 }: ManagementTabsProps) => {
   const [activeTab, setActiveTab] = useState<
@@ -43,6 +47,7 @@ const ManagementTabs = ({
     | "combos"
     | "settings"
     | "operating-hours"
+    | "bancos"
   >("dashboard")
 
   return (
@@ -96,6 +101,14 @@ const ManagementTabs = ({
           <SettingsIcon className="mr-2 h-4 w-4 lg:mr-0" />
           Configurações
         </Button>
+        <Button
+          variant={activeTab === "bancos" ? "default" : "ghost"}
+          onClick={() => setActiveTab("bancos")}
+          className="h-9 px-3 text-xs lg:h-10 lg:gap-2 lg:px-4 lg:text-sm"
+        >
+          <CreditCardIcon className="mr-2 h-4 w-4 lg:mr-0" />
+          Bancos
+        </Button>
       </div>
 
       <div className="mt-2">
@@ -112,6 +125,7 @@ const ManagementTabs = ({
             operatingExceptions={operatingExceptions}
           />
         )}
+        {activeTab === "bancos" && <IntegrationsManager banks={banks} />}
       </div>
     </div>
   )

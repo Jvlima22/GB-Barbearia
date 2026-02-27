@@ -121,8 +121,49 @@ async function main() {
 
   console.log("Produtos inseridos/atualizados com sucesso!")
 
+  // 4. Lista de Bancos suportados
+  const banks = [
+    {
+      name: "Itaú Empresas",
+      provider: "ITAU",
+      imageUrl: "/banks/itau.png",
+      isActive: true,
+    },
+    {
+      name: "Bradesco Net Empresa",
+      provider: "BRADESCO",
+      imageUrl: "/banks/bradesco.png",
+      isActive: true,
+    },
+    {
+      name: "Mercado Pago",
+      provider: "MERCADO_PAGO",
+      imageUrl: "/banks/mercado-pago.png",
+      isActive: true,
+    },
+    {
+      name: "PicPay Negócios",
+      provider: "PICPAY",
+      imageUrl: "/banks/picpay.png",
+      isActive: false, // "Em breve"
+    },
+  ]
+
+  for (const bank of banks) {
+    await prismaExtended.bank.upsert({
+      where: { provider: bank.provider },
+      update: {
+        name: bank.name,
+        isActive: bank.isActive,
+      },
+      create: bank,
+    })
+  }
+
+  console.log("Bancos inseridos/atualizados com sucesso!")
+
   console.log(
-    "Seed concluído! Banco de dados populado com configurações, serviços e produtos.",
+    "Seed concluído! Banco de dados populado com configurações, serviços, produtos e bancos.",
   )
 }
 

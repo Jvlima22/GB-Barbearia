@@ -18,6 +18,7 @@ import ManualBookingDialog from "./_components/manual-booking-dialog"
 import ManualSaleDialog from "./_components/manual-sale-dialog"
 import DeleteBookingButton from "./_components/delete-booking-button"
 import DeletePurchaseButton from "./_components/delete-purchase-button"
+import { getBanks } from "../_actions/get-banks"
 
 const AdminPage = async () => {
   const session = await getServerSession(authOptions)
@@ -37,6 +38,8 @@ const AdminPage = async () => {
     operatingDays,
     operatingExceptions,
   } = await getAdminSummary()
+
+  const banks = await getBanks()
 
   const totalRevenue =
     bookings.reduce(
@@ -94,6 +97,7 @@ const AdminPage = async () => {
           }
           operatingDays={operatingDays}
           operatingExceptions={operatingExceptions}
+          banks={banks}
         >
           <div className="flex flex-col gap-8">
             {/* METRICS */}
