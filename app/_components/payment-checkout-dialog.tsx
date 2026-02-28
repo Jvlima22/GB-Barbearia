@@ -61,7 +61,9 @@ const PaymentCheckoutDialog = ({
       if (selectedMethod === "pix" && result.qrCode) {
         setPixData({ qrCode: result.qrCode, base64: result.qrCodeBase64 })
       } else if (selectedMethod === "card" && result.url) {
+        setLoading(true)
         window.location.href = result.url
+        return
       }
     } catch (error: any) {
       toast.error(error.message || "Erro ao processar pagamento")

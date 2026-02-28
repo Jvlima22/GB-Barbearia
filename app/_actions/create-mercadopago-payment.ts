@@ -109,14 +109,6 @@ export async function createMercadoPagoPayment(params: {
           last_name: session.user.name?.split(" ").slice(1).join(" ") || "TGL",
         },
         external_reference: externalReference,
-        ...(notificationUrl && { notification_url: notificationUrl }),
-        metadata: {
-          user_id: (session.user as any).id,
-          item_id: params.itemId,
-          type: params.type,
-          date: params.metadata?.date,
-          ...params.metadata,
-        },
       }),
     })
 
