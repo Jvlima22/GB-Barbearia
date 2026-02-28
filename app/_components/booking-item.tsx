@@ -151,7 +151,12 @@ const BookingItem = ({ booking, settings }: BookingItemProps) => {
           <div className="mb-3 mt-6 text-white">
             <BookingSummary
               barbershop={barbershop}
-              service={(booking.service || (booking as any).combo) as any}
+              service={
+                {
+                  ...(booking.service || (booking as any).combo),
+                  paymentStatus: booking.paymentStatus,
+                } as any
+              }
               selectedDate={booking.date}
               isConfirmed={isConfirmed}
             />

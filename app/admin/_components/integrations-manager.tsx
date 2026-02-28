@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/app/_components/ui/button"
 import { Input } from "@/app/_components/ui/input"
 import {
@@ -14,14 +15,15 @@ import { upsertBankCredential } from "@/app/_actions/upsert-bank-credential"
 import { toast } from "sonner"
 import {
   CheckCircle2Icon,
-  WalletIcon,
-  PlusIcon,
-  GlobeIcon,
   LayoutGridIcon,
   ListIcon,
   InfoIcon,
-  ExternalLinkIcon,
+  RefreshCcwIcon,
+  UnlinkIcon,
 } from "lucide-react"
+import Image from "next/image"
+import { deleteBankCredential } from "@/app/_actions/delete-bank-credential"
+import { toggleBankCredentialStatus } from "@/app/_actions/toggle-bank-credential"
 
 const getBankHelpInstructions = (provider: string) => {
   switch (provider) {
@@ -51,7 +53,7 @@ const getBankHelpInstructions = (provider: string) => {
           "Acesse o Mercado Pago Developers (mercadopago.com.br/developers).",
           "Vá no menu superior 'Suas integrações'.",
           "Acesse a seção 'Credenciais de Produção'.",
-          "Copie o 'Acess Token' (Token de Produção) e insira abaixo no campo 'Client Secret'.",
+          "Copie o 'Acess Token' (Token de Produção - APP_USR-...) e insira abaixo no campo 'Access Token'.",
         ],
         link: "https://www.mercadopago.com.br/developers/",
       }
@@ -80,7 +82,7 @@ const getBankHelpInstructions = (provider: string) => {
 }
 
 interface IntegrationsManagerProps {
-  banks: any[] // Extended Bank type with credentials check
+  banks: any[]
 }
 
 const getBankLogo = (provider: string, imageUrl: string) => {
@@ -96,13 +98,13 @@ const getBankLogo = (provider: string, imageUrl: string) => {
 }
 
 const IntegrationsManager = ({ banks }: IntegrationsManagerProps) => {
+  const router = useRouter()
   const [selectedBank, setSelectedBank] = useState<any | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isHelpDialogOpen, setIsHelpDialogOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
 
-  // Form state
   const [clientId, setClientId] = useState("")
   const [clientSecret, setClientSecret] = useState("")
   const [publicKey, setPublicKey] = useState("")
@@ -116,27 +118,74 @@ const IntegrationsManager = ({ banks }: IntegrationsManagerProps) => {
   }
 
   const handleSave = async () => {
-    if (!clientId || !clientSecret) {
-      toast.error("Preencha Client ID e Client Secret")
-      return
+    // Para MP, apenas o secret (Access Token) é obrigatório.
+    if (selectedBank?.provider === "MERCADO_PAGO") {
+      if (!clientSecret) {
+        toast.error("Obrigatório informar o Access Token (APP_USR-...)")
+        return
+      }
+    } else {
+      if (!clientId || !clientSecret) {
+        toast.error("Preencha Client ID e Client Secret")
+        return
+      }
     }
+
+    // Limpeza rigorosa para evitar o erro de ByteString (caracteres não-ASCII como o ✔)
+    const clean = (s: string) => s.replace(/[^\x00-\x7F]/g, "").trim()
+    const cleanClientId = clean(clientId)
+    const cleanClientSecret = clean(clientSecret)
+    const cleanPublicKey = clean(publicKey)
 
     try {
       setIsLoading(true)
       await upsertBankCredential({
         bankId: selectedBank.id,
-        clientId,
-        clientSecret,
-        publicKey,
-        environment: "PRODUCTION", // Defaulting to production for now, can be improved.
+        clientId: cleanClientId,
+        clientSecret: cleanClientSecret,
+        publicKey: cleanPublicKey,
+        environment: "PRODUCTION",
       })
-      toast.success("Credenciais salvas com sucesso!")
+      toast.success("Conectado com sucesso!")
       setIsDialogOpen(false)
-      // Optional: Refresh page to get updated banks state
-      window.location.reload()
-    } catch (error) {
+      router.refresh()
+    } catch (error: any) {
       console.error(error)
-      toast.error("Erro ao salvar as credenciais")
+      toast.error(error.message || "Erro ao salvar as credenciais")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleToggle = async (bank: any) => {
+    try {
+      const currentStatus = bank.credentials[0]?.isEnabled
+      setIsLoading(true)
+      await toggleBankCredentialStatus(bank.id, !currentStatus)
+      toast.success(
+        !currentStatus ? "Integração ativada!" : "Integração desativada!",
+      )
+      router.refresh()
+    } catch (error) {
+      toast.error("Erro ao alterar status")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleDisconnect = async (bank: any) => {
+    if (
+      !confirm("Tem certeza que deseja desconectar e excluir as credenciais?")
+    )
+      return
+
+    try {
+      setIsLoading(true)
+      await deleteBankCredential(bank.id)
+      toast.success("Banco desconectado!")
+      router.refresh()
+    } catch (error) {
+      toast.error("Erro ao desconectar")
     } finally {
       setIsLoading(false)
     }
@@ -150,13 +199,10 @@ const IntegrationsManager = ({ banks }: IntegrationsManagerProps) => {
             Integrações Bancárias
           </h2>
           <p className="text-xs text-gray-400 lg:text-sm">
-            Conecte as suas contas para receber os pagamentos diretamente. O
-            dinheiro cai direto na sua conta, em seu CNPJ/CPF, sem
-            intermediários.
+            Conecte suas contas para receber pagamentos diretamente.
           </p>
         </div>
 
-        {/* View Toggle */}
         <div className="flex w-fit self-end rounded-lg border border-white/10 bg-[#1A1A1A] p-1 lg:self-auto">
           <button
             onClick={() => setViewMode("grid")}
@@ -190,19 +236,13 @@ const IntegrationsManager = ({ banks }: IntegrationsManagerProps) => {
                 className="flex flex-row items-center justify-between gap-2 rounded-xl border border-white/10 bg-[#1A1A1A] p-3 transition-colors hover:border-primary/50 lg:p-4"
               >
                 <div className="flex min-w-0 flex-1 items-center gap-2 lg:gap-4">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg lg:h-10 lg:w-10">
-                    <img
+                  <div className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg lg:h-10 lg:w-10">
+                    <Image
                       src={getBankLogo(bank.provider, bank.imageUrl)}
                       alt={bank.name}
-                      className="h-full w-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.style.display = "none"
-                        e.currentTarget.nextElementSibling?.classList.remove(
-                          "hidden",
-                        )
-                      }}
+                      fill
+                      className="object-cover"
                     />
-                    <WalletIcon className="hidden h-4 w-4 text-primary lg:h-5 lg:w-5" />
                   </div>
                   <div className="flex min-w-0 flex-1 flex-col">
                     <div className="flex items-center gap-1.5 lg:gap-2">
@@ -210,32 +250,55 @@ const IntegrationsManager = ({ banks }: IntegrationsManagerProps) => {
                         {bank.name}
                       </h3>
                       {hasCredentials && (
-                        <CheckCircle2Icon className="h-3.5 w-3.5 shrink-0 text-green-500 lg:h-4 lg:w-4" />
+                        <CheckCircle2Icon className="h-3.5 w-3.5 text-green-500" />
                       )}
                     </div>
-                    <p className="truncate text-[9px] text-gray-400 lg:text-sm">
-                      {hasCredentials
-                        ? `Conectado em ${bank.credentials[0]?.environment === "PRODUCTION" ? "Produção" : "Testes"}`
-                        : "Nenhuma vinculada"}
-                    </p>
+                    {hasCredentials && (
+                      <p className="truncate text-[9px] text-gray-400 lg:text-sm">
+                        Conectado em {bank.credentials[0]?.environment}
+                      </p>
+                    )}
                   </div>
                 </div>
-                <Button
-                  variant={hasCredentials ? "outline" : "default"}
-                  size="sm"
-                  className="h-7 w-auto shrink-0 px-2.5 text-[10px] lg:h-9 lg:px-4 lg:text-sm"
-                  onClick={() => handleOpenBank(bank)}
-                  disabled={!bank.isActive} // In case some banks are "coming soon"
-                >
-                  {bank.isActive
-                    ? hasCredentials
-                      ? "Atualizar"
-                      : "Conectar"
-                    : "Em Breve"}
-                </Button>
+                {bank.isActive ? (
+                  hasCredentials ? (
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDisconnect(bank)}
+                        disabled={isLoading}
+                      >
+                        <UnlinkIcon className="h-4 w-4" />
+                      </Button>
+                      <div
+                        className={`relative h-5 w-10 cursor-pointer rounded-full transition-colors ${bank.credentials[0]?.isEnabled ? "bg-green-500" : "bg-gray-600"}`}
+                        onClick={() => handleToggle(bank)}
+                      >
+                        <div
+                          className={`absolute top-1 h-3 w-3 rounded-full bg-white transition-all ${bank.credentials[0]?.isEnabled ? "right-1" : "left-1"}`}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => handleOpenBank(bank)}
+                      disabled={isLoading}
+                    >
+                      Conectar
+                    </Button>
+                  )
+                ) : (
+                  <Button variant="outline" size="sm" disabled>
+                    Em Breve
+                  </Button>
+                )}
               </div>
             )
           }
+
           return (
             <div
               key={bank.id}
@@ -243,21 +306,15 @@ const IntegrationsManager = ({ banks }: IntegrationsManagerProps) => {
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 lg:gap-3">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg lg:h-10 lg:w-10">
-                    <img
+                  <div className="relative h-8 w-8 overflow-hidden rounded-lg lg:h-10 lg:w-10">
+                    <Image
                       src={getBankLogo(bank.provider, bank.imageUrl)}
                       alt={bank.name}
-                      className="h-full w-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.style.display = "none"
-                        e.currentTarget.nextElementSibling?.classList.remove(
-                          "hidden",
-                        )
-                      }}
+                      fill
+                      className="object-cover"
                     />
-                    <WalletIcon className="hidden h-4 w-4 text-primary lg:h-5 lg:w-5" />
                   </div>
-                  <h3 className="text-sm font-bold leading-tight text-white lg:text-base">
+                  <h3 className="text-sm font-bold text-white lg:text-base">
                     {bank.name}
                   </h3>
                 </div>
@@ -265,213 +322,133 @@ const IntegrationsManager = ({ banks }: IntegrationsManagerProps) => {
                   <CheckCircle2Icon className="h-4 w-4 text-green-500 lg:h-6 lg:w-6" />
                 )}
               </div>
-              <p className="min-h-[20px] text-xs leading-snug text-gray-400 lg:min-h-[40px] lg:text-sm">
+              <p className="min-h-[20px] text-xs text-gray-400 lg:min-h-[40px] lg:text-sm">
                 {hasCredentials
-                  ? `Em ambiente de ${bank.credentials[0]?.environment === "PRODUCTION" ? "Produção" : "Testes"}.`
-                  : "Nenhuma conta vinculada."}
+                  ? `Ambiente: ${bank.credentials[0]?.environment}`
+                  : ""}
               </p>
-              <Button
-                variant={hasCredentials ? "outline" : "default"}
-                size="sm"
-                className="mt-1 h-8 w-full text-xs lg:mt-2 lg:h-9 lg:text-sm"
-                onClick={() => handleOpenBank(bank)}
-                disabled={!bank.isActive} // In case some banks are "coming soon"
-              >
-                {bank.isActive
-                  ? hasCredentials
-                    ? "Atualizar Chave"
-                    : "Conectar"
-                  : "Em Breve"}
-              </Button>
+              {bank.isActive ? (
+                hasCredentials ? (
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDisconnect(bank)}
+                        disabled={isLoading}
+                      >
+                        <UnlinkIcon className="mr-2 h-4 w-4" />
+                        Desconectar
+                      </Button>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-400">
+                          {bank.credentials[0]?.isEnabled ? "Ativo" : "Off"}
+                        </span>
+                        <div
+                          className={`relative h-6 w-11 cursor-pointer rounded-full transition-colors ${bank.credentials[0]?.isEnabled ? "bg-green-500" : "bg-gray-600"}`}
+                          onClick={() => handleToggle(bank)}
+                        >
+                          <div
+                            className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-all ${bank.credentials[0]?.isEnabled ? "right-1" : "left-1"}`}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleOpenBank(bank)}
+                      disabled={isLoading}
+                    >
+                      <RefreshCcwIcon className="mr-2 h-3 w-3" />
+                      Atualizar
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => handleOpenBank(bank)}
+                    disabled={isLoading}
+                  >
+                    Conectar
+                  </Button>
+                )
+              ) : (
+                <Button variant="outline" size="sm" disabled>
+                  Em Breve
+                </Button>
+              )}
             </div>
           )
         })}
-        {/* Custom Gateway Option */}
-        {viewMode === "grid" ? (
-          <div
-            className="flex cursor-pointer flex-col gap-3 rounded-xl border border-dashed border-white/20 bg-[#1A1A1A]/50 p-4 transition-colors hover:border-primary/50 lg:gap-4 lg:p-6"
-            onClick={() =>
-              handleOpenBank({
-                name: "Gateway Customizado",
-                provider: "CUSTOM",
-              })
-            }
-          >
-            <div className="flex items-center gap-2 lg:gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/20 lg:h-10 lg:w-10">
-                <GlobeIcon className="h-4 w-4 text-primary lg:h-5 lg:w-5" />
-              </div>
-              <h3 className="text-sm font-bold leading-tight text-white lg:text-base">
-                Integração Universal
-              </h3>
-            </div>
-            <p className="min-h-[35px] text-xs leading-snug text-gray-400 lg:min-h-[40px] lg:text-sm">
-              Conecte com gateways do mundo (Pagar.me, Asaas, PagBank) via
-              Webhook genérico.
-            </p>
-            <Button
-              variant="outline"
-              size="sm"
-              className="mt-1 h-8 w-full border-primary/50 text-xs text-primary hover:bg-primary/10 lg:mt-2 lg:h-9 lg:text-sm"
-            >
-              <PlusIcon className="mr-1.5 h-3 w-3 lg:mr-2 lg:h-4 lg:w-4" />{" "}
-              Configurar
-            </Button>
-          </div>
-        ) : (
-          <div
-            className="flex cursor-pointer flex-row items-center justify-between gap-2 rounded-xl border border-dashed border-white/20 bg-[#1A1A1A]/50 p-3 transition-colors hover:border-primary/50 lg:p-4"
-            onClick={() =>
-              handleOpenBank({
-                name: "Gateway Customizado",
-                provider: "CUSTOM",
-              })
-            }
-          >
-            <div className="flex min-w-0 flex-1 items-center gap-2 lg:gap-4">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/20 lg:h-10 lg:w-10">
-                <GlobeIcon className="h-4 w-4 text-primary lg:h-5 lg:w-5" />
-              </div>
-              <div className="flex min-w-0 flex-1 flex-col">
-                <h3 className="truncate text-xs font-bold text-white lg:text-base">
-                  Integração Universal
-                </h3>
-                <p className="truncate text-[9px] text-gray-400 lg:text-sm">
-                  Conecte com Asaas, Pagar.me, PagBank, Vindi
-                </p>
-              </div>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-7 w-auto shrink-0 border-primary/50 px-2.5 text-[10px] text-primary hover:bg-primary/10 lg:h-9 lg:px-4 lg:text-sm"
-            >
-              <PlusIcon className="mr-1 hidden h-3 w-3 lg:mr-2 lg:inline lg:h-4 lg:w-4" />{" "}
-              Configurar
-            </Button>
-          </div>
-        )}
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="border-white/10 bg-[#1A1A1A] sm:max-w-[450px]">
           <DialogHeader>
-            <div className="mr-6 flex items-center justify-between">
+            <div className="flex items-center justify-between">
               <DialogTitle className="text-white">
                 Conectar {selectedBank?.name}
               </DialogTitle>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-white hover:bg-white/10 hover:text-white/80"
                 onClick={() => setIsHelpDialogOpen(true)}
-                title="Como configurar?"
               >
                 <InfoIcon className="h-5 w-5" />
               </Button>
             </div>
-            <DialogDescription className="mt-2 text-gray-400">
-              Insira as credenciais geradas no painel do banco. Elas serão
-              criptografadas e não ficarão expostas em nosso banco de dados.
+            <DialogDescription className="text-gray-400">
+              Para o Mercado Pago, apenas o seu **Access Token** de Produção é
+              obrigatório.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-4 py-2">
+          <div className="grid gap-4 py-4">
+            {selectedBank?.provider !== "MERCADO_PAGO" && (
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium text-white">
+                  Client ID
+                </label>
+                <Input
+                  placeholder="Insira o Client ID"
+                  value={clientId}
+                  onChange={(e) => setClientId(e.target.value)}
+                  className="border-white/10 bg-[#222]"
+                />
+              </div>
+            )}
             <div className="flex flex-col gap-2">
               <label className="text-sm font-medium text-white">
-                Client ID
+                {selectedBank?.provider === "MERCADO_PAGO"
+                  ? "Access Token (APP_USR-...)"
+                  : "Client Secret"}
               </label>
               <Input
-                placeholder="Insira o Client ID"
-                value={clientId}
-                onChange={(e) => setClientId(e.target.value)}
-                className="border-white/10 bg-[#222]"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-white">
-                Client Secret (Token Temporário)
-              </label>
-              <Input
-                placeholder="Insira o Client Secret"
+                placeholder={
+                  selectedBank?.provider === "MERCADO_PAGO"
+                    ? "Copie o Access Token do Dashboard"
+                    : "Insira o Client Secret"
+                }
                 type="password"
                 value={clientSecret}
                 onChange={(e) => setClientSecret(e.target.value)}
                 className="border-white/10 bg-[#222]"
               />
             </div>
-            {selectedBank?.provider === "ITAU" && (
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-white">
-                  Chave Pública (Opcional - mTLS)
-                </label>
-                <Input
-                  placeholder="Insira a chave pública se tiver"
-                  value={publicKey}
-                  onChange={(e) => setPublicKey(e.target.value)}
-                  className="border-white/10 bg-[#222]"
-                />
-              </div>
-            )}
-            {selectedBank?.provider === "CUSTOM" && (
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-white">
-                  URL do Webhook (Seu Endpoint)
-                </label>
-                <Input
-                  placeholder="https://seu-gateway.com/webhook"
-                  value={publicKey} // reusing pubkey state for custom webhook just for UI logic
-                  onChange={(e) => setPublicKey(e.target.value)}
-                  className="border-white/10 bg-[#222]"
-                />
-              </div>
-            )}
-            {selectedBank?.provider === "PICPAY" && (
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-white">
-                  PicPay Seller Token (x-seller-token)
-                </label>
-                <Input
-                  placeholder="Insira o Seller Token"
-                  value={publicKey}
-                  onChange={(e) => setPublicKey(e.target.value)}
-                  className="border-white/10 bg-[#222]"
-                />
-              </div>
-            )}
-            {selectedBank?.provider === "MERCADO_PAGO" && (
-              <p className="rounded border border-blue-400/20 bg-blue-400/10 p-2 text-xs text-blue-400">
-                Para o Mercado Pago, o &quot;Client.Secret&quot; equivale ao seu
-                &quot;Access Token&quot; de Produção (APP_USR-...). O Client ID
-                pode ser a sua Chave Pública (APP_USR-...).
-              </p>
-            )}
-            {selectedBank?.provider === "BRADESCO" && (
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-white">
-                  Certificado .PEM (Chave Privada)
-                </label>
-                <Input
-                  placeholder="Cole aqui o conteúdo do seu certificado pfx/pem gerado..."
-                  value={publicKey}
-                  onChange={(e) => setPublicKey(e.target.value)}
-                  className="border-white/10 bg-[#222]"
-                />
-              </div>
-            )}
           </div>
 
-          <div className="flex justify-end gap-3">
+          <div className="mt-4 flex justify-end gap-3">
             <Button
               variant="outline"
               onClick={() => setIsDialogOpen(false)}
               disabled={isLoading}
-              className="border-white/10 text-white"
             >
               Cancelar
             </Button>
             <Button onClick={handleSave} disabled={isLoading}>
-              {isLoading ? "Salvando..." : "Salvar"}
+              {isLoading ? "Conectando..." : "Conectar"}
             </Button>
           </div>
         </DialogContent>
@@ -483,37 +460,16 @@ const IntegrationsManager = ({ banks }: IntegrationsManagerProps) => {
             <DialogTitle className="text-white">
               Como configurar {selectedBank?.name}?
             </DialogTitle>
-            <DialogDescription className="text-gray-400">
-              Siga os passos abaixo para encontrar suas credenciais do parceiro.
-            </DialogDescription>
           </DialogHeader>
-
-          {selectedBank && (
-            <div className="my-2 flex flex-col gap-3 rounded-md border border-primary/20 bg-primary/10 p-4 text-sm text-gray-300">
-              <ul className="list-inside list-decimal space-y-2">
-                {getBankHelpInstructions(selectedBank.provider).steps.map(
-                  (step, i) => (
-                    <li key={i} className="leading-snug">
-                      {step}
-                    </li>
-                  ),
+          <div className="my-2 flex flex-col gap-3 rounded-md border border-primary/20 bg-primary/10 p-4 text-sm text-gray-300">
+            <ul className="list-inside list-decimal space-y-2">
+              {selectedBank &&
+                getBankHelpInstructions(selectedBank.provider).steps.map(
+                  (step, i) => <li key={i}>{step}</li>,
                 )}
-              </ul>
-              {getBankHelpInstructions(selectedBank.provider).link && (
-                <a
-                  href={getBankHelpInstructions(selectedBank.provider).link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-2 flex items-center pb-1 font-bold text-white hover:text-gray-300 hover:underline"
-                >
-                  Acessar Documentação da API{" "}
-                  <ExternalLinkIcon className="ml-1 h-4 w-4" />
-                </a>
-              )}
-            </div>
-          )}
-
-          <div className="flex justify-end gap-3">
+            </ul>
+          </div>
+          <div className="flex justify-end">
             <Button onClick={() => setIsHelpDialogOpen(false)}>Entendi</Button>
           </div>
         </DialogContent>

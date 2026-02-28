@@ -76,7 +76,12 @@ export const getAdminSummary = async () => {
     })),
     services: services.map((s: any) => ({ ...s, price: Number(s.price) })),
     products: products.map((p: any) => ({ ...p, price: Number(p.price) })),
-    combos: combos.map((c: any) => ({ ...c, price: Number(c.price) })),
+    combos: combos.map((c: any) => ({
+      ...c,
+      price: Number(c.price),
+      service1: { ...c.service1, price: Number(c.service1.price) },
+      service2: { ...c.service2, price: Number(c.service2.price) },
+    })),
     users,
     settings,
     operatingDays,

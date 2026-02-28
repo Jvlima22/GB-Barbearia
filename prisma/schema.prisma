@@ -9,30 +9,19 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-enum PaymentStatus {
-  PENDING
-  SUCCEEDED
-  FAILED
-}
-
-enum Role {
-  USER
-  ADMIN
-}
-
 model User {
-  id            String    @id @default(cuid())
+  id            String     @id @default(cuid())
+  email         String     @unique
   name          String?
-  email         String    @unique
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
   emailVerified DateTime?
   image         String?
-  role          Role      @default(USER)
+  role          Role       @default(USER)
   accounts      Account[]
-  sessions      Session[]
   bookings      Booking[]
   purchases     Purchase[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
 }
 
 model Account {
@@ -47,11 +36,9 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([provider, providerAccountId])
 }
@@ -60,11 +47,9 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
@@ -82,15 +67,15 @@ model Settings {
   phones      String[]
   description String
   imageUrl    String
-  startHour   String   @default("09:00")
-  endHour     String   @default("19:00")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  endHour     String   @default("19:00")
+  startHour   String   @default("09:00")
 }
 
 model OperatingDay {
   id        String   @id @default(uuid())
-  dayOfWeek Int      @unique // 0 (Sunday) to 6 (Saturday)
+  dayOfWeek Int      @unique
   startTime String   @default("09:00")
   endTime   String   @default("19:00")
   isOpen    Boolean  @default(true)
@@ -115,99 +100,96 @@ model Service {
   description String
   imageUrl    String
   price       Decimal   @db.Decimal(10, 2)
-
   bookings    Booking[]
   combo1      Combo[]   @relation("Service1")
   combo2      Combo[]   @relation("Service2")
 }
 
 model Product {
-  id          String    @id @default(uuid())
-  name        String    @unique
+  id          String     @id @default(uuid())
+  name        String     @unique
   description String
   imageUrl    String
-  price       Decimal   @db.Decimal(10, 2)
-
+  price       Decimal    @db.Decimal(10, 2)
   purchases   Purchase[]
 }
 
 model Booking {
-  id                      String        @id @default(uuid())
+  id                      String         @id @default(uuid())
   userId                  String
   serviceId               String?
-  comboId                 String?
   date                    DateTime
-  stripeCheckoutSessionId String?
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
   paymentStatus           PaymentStatus?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user    User    @relation(fields: [userId], references: [id])
-  service Service? @relation(fields: [serviceId], references: [id])
-  combo   Combo?   @relation(fields: [comboId], references: [id])
+  stripeCheckoutSessionId String?
+  comboId                 String?
+  combo                   Combo?         @relation(fields: [comboId], references: [id])
+  service                 Service?       @relation(fields: [serviceId], references: [id])
+  user                    User           @relation(fields: [userId], references: [id])
 }
 
 model Purchase {
-  id                      String        @id @default(uuid())
+  id                      String         @id @default(uuid())
   userId                  String
   productId               String
-  quantity                Int           @default(1)
+  quantity                Int            @default(1)
   stripeCheckoutSessionId String?
   paymentStatus           PaymentStatus?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user    User    @relation(fields: [userId], references: [id])
-  product Product @relation(fields: [productId], references: [id])
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
+  product                 Product        @relation(fields: [productId], references: [id])
+  user                    User           @relation(fields: [userId], references: [id])
 }
 
 model Combo {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   name        String
   description String
   imageUrl    String
-  price       Decimal  @db.Decimal(10, 2)
-  bookings    Booking[]
-  
+  price       Decimal   @db.Decimal(10, 2)
   service1Id  String
   service2Id  String
-
-  service1    Service @relation("Service1", fields: [service1Id], references: [id])
-  service2    Service @relation("Service2", fields: [service2Id], references: [id])
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  bookings    Booking[]
+  service1    Service   @relation("Service1", fields: [service1Id], references: [id])
+  service2    Service   @relation("Service2", fields: [service2Id], references: [id])
 }
 
 model Bank {
-  id          String   @id @default(uuid())
-  name        String   // e.g., "Itaú", "Bradesco", "Mercado Pago"
-  provider    String   @unique // e.g., "ITAU", "BRADESCO", "STRIPE", "PICPAY"
+  id          String          @id @default(uuid())
+  name        String
+  provider    String          @unique
   imageUrl    String?
-  isActive    Boolean  @default(true) // If the platform supports it right now
-  
-  credentials BankCredential[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  isActive    Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  credentials BankCredential?
 }
 
 model BankCredential {
-  id             String   @id @default(uuid())
-  bankId         String
-  clientId       String   // Encrypted
-  clientSecret   String   // Encrypted
-  publicKey      String?  // Optional, for mTLS etc.
-  customWebhook  String? 
-  isDefault      Boolean  @default(false)
-  environment    String   @default("SANDBOX") // "SANDBOX" or "PRODUCTION"
+  id            String   @id @default(uuid())
+  bankId        String   @unique
+  clientId      String
+  clientSecret  String
+  publicKey     String?
+  customWebhook String?
+  isDefault     Boolean  @default(false)
+  environment   String   @default("SANDBOX")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  isEnabled     Boolean  @default(true)
+  bank          Bank     @relation(fields: [bankId], references: [id], onDelete: Cascade)
+}
 
-  bank           Bank     @relation(fields: [bankId], references: [id], onDelete: Cascade)
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+}
 
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  @@unique([bankId]) // Ensures one credential per bank per tenant (assuming single tenant)
+enum Role {
+  USER
+  ADMIN
 }

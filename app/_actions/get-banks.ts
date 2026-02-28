@@ -1,6 +1,6 @@
-"use server";
+"use server"
 
-import { db } from "@/app/_lib/prisma";
+import { db } from "@/app/_lib/prisma"
 
 export const getBanks = async () => {
   return await db.bank.findMany({
@@ -8,8 +8,7 @@ export const getBanks = async () => {
       credentials: {
         select: {
           id: true,
-          // Em um mundo real, JAMAIS retornar credenciais abertas,
-          // Apenas informar se existem:
+          isEnabled: true,
           environment: true,
           isDefault: true,
         },
@@ -18,5 +17,5 @@ export const getBanks = async () => {
     orderBy: {
       name: "asc",
     },
-  });
-};
+  })
+}

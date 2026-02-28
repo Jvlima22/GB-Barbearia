@@ -1,33 +1,77 @@
 import crypto from "crypto"
 
-const ENCRYPTION_KEY =
-  process.env.ENCRYPTION_KEY || crypto.randomBytes(32).toString("hex") // 256 bits
-const IV_LENGTH = 16 // AES requires 16 bytes
+// Use exactly 32 bytes for the key. Pad or slice as needed.
+const ENCRYPTION_KEY = (
+  process.env.ENCRYPTION_KEY || "GB_BARBEARIA_DEFAULT_KEY_32_CHARS"
+)
+  .padEnd(32, "0")
+  .slice(0, 32)
+const IV_LENGTH = 16
+const ALGORITHM = "aes-256-cbc"
 
-export function encrypt(text: string) {
-  const keyBuffer = Buffer.from(ENCRYPTION_KEY.padEnd(32, "0").slice(0, 32))
-  const iv = crypto.randomBytes(IV_LENGTH)
-  const cipher = crypto.createCipheriv("aes-256-cbc", keyBuffer, iv)
+/**
+ * Encrypts sensitive text using AES-256-CBC.
+ */
+export function encrypt(text: string): string {
+  try {
+    if (!text) return ""
 
-  let encrypted = cipher.update(text)
-  encrypted = Buffer.concat([encrypted, cipher.final()])
+    const key = Buffer.from(ENCRYPTION_KEY, "utf8")
+    const iv = crypto.randomBytes(IV_LENGTH)
 
-  return iv.toString("hex") + ":" + encrypted.toString("hex")
+    // Using 'as any' on ALGORITHM and key/iv to bypass strict Node.js typing conflicts in Windows environment
+    const cipher = crypto.createCipheriv(
+      ALGORITHM as any,
+      key as any,
+      iv as any,
+    )
+
+    let encrypted = cipher.update(text, "utf8", "hex")
+    encrypted += cipher.final("hex")
+
+    return iv.toString("hex") + ":" + encrypted
+  } catch (error) {
+    console.error("[Encryption Error]: Failed to encrypt data.", error)
+    return text
+  }
 }
 
-export function decrypt(text: string) {
-  const parts = text.split(":")
-  const ivStr = parts.shift()
-  if (!ivStr) throw new Error("Invalid encrypted text format")
+/**
+ * Decrypts text encrypted by the encrypt function above.
+ */
+export function decrypt(text: string): string {
+  try {
+    if (!text || !text.includes(":")) {
+      return text
+    }
 
-  const iv = Buffer.from(ivStr, "hex")
-  const encryptedText = Buffer.from(parts.join(":"), "hex")
-  const keyBuffer = Buffer.from(ENCRYPTION_KEY.padEnd(32, "0").slice(0, 32))
+    const parts = text.split(":")
+    const ivHex = parts.shift()
+    const encryptedHex = parts.join(":")
 
-  const decipher = crypto.createDecipheriv("aes-256-cbc", keyBuffer, iv)
+    if (!ivHex || !encryptedHex) {
+      return text
+    }
 
-  let decrypted = decipher.update(encryptedText)
-  decrypted = Buffer.concat([decrypted, decipher.final()])
+    const key = Buffer.from(ENCRYPTION_KEY, "utf8")
+    const iv = Buffer.from(ivHex, "hex")
+    const encryptedBuffer = Buffer.from(encryptedHex, "hex")
 
-  return decrypted.toString()
+    // Using 'as any' on ALGORITHM and key/iv to bypass strict Node.js typing conflicts in Windows environment
+    const decipher = crypto.createDecipheriv(
+      ALGORITHM as any,
+      key as any,
+      iv as any,
+    )
+
+    let decrypted = decipher.update(encryptedBuffer as any, undefined, "utf8")
+    decrypted += decipher.final("utf8")
+
+    return decrypted
+  } catch (error) {
+    console.warn(
+      "[Encryption Warning]: Decryption failed. Returning original text. Check if ENCRYPTION_KEY changed.",
+    )
+    return text
+  }
 }

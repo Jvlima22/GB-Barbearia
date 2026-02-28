@@ -14,6 +14,7 @@ import {
   getOperatingExceptions,
 } from "../_actions/get-operating-settings"
 import { cn } from "@/app/_lib/utils"
+import PaymentCheckoutDialog from "./payment-checkout-dialog"
 
 interface ServiceBookingSheetProps {
   service: {
@@ -41,6 +42,15 @@ const ServiceBookingSheet = ({
   const [exceptions, setExceptions] = useState<any[]>([])
   const [slotsCache, setSlotsCache] = useState<Record<string, string[]>>({})
 
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
+  const [paymentData, setPaymentData] = useState<{
+    amount: number
+    serviceName: string
+    itemId: string
+    type: "SERVICE" | "PRODUCT"
+    metadata?: any
+  } | null>(null)
+
   // Fetch operating settings once when component opens
   useEffect(() => {
     if (isOpen) {
@@ -58,7 +68,6 @@ const ServiceBookingSheet = ({
       }
       fetchOperatingSettings()
     } else {
-      // Reset state when closed
       setSelectedDate(undefined)
       setHour(undefined)
       setAvailableSlots([])
@@ -122,8 +131,22 @@ const ServiceBookingSheet = ({
         throw new Error(errorData.error || "Erro ao processar agendamento")
       }
 
-      const { url } = await response.json()
+      const checkoutResponse = await response.json()
 
+      // Se for Mercado Pago ou Mock, abrimos nosso modal profissional
+      if (checkoutResponse.action === "OPEN_MODAL" || checkoutResponse.isMock) {
+        setPaymentData({
+          amount: Number(checkoutResponse.amount),
+          serviceName: checkoutResponse.name,
+          itemId: service.id,
+          type: "SERVICE",
+          metadata: { date: bookingDate.toISOString() },
+        })
+        setIsPaymentModalOpen(true)
+        return
+      }
+
+      const { url } = checkoutResponse
       if (url) {
         window.location.href = url
       }
@@ -135,22 +158,18 @@ const ServiceBookingSheet = ({
     }
   }
 
-  // Help function to determine if a date is disabled
   const isDateDisabled = (date: Date) => {
     const normalizedDate = startOfDay(date)
     const today = startOfDay(new Date())
 
-    // 1. Block past dates
     if (normalizedDate < today) return true
 
-    // 2. Check Exceptions
     const exception = exceptions.find(
       (e) =>
         startOfDay(new Date(e.date)).getTime() === normalizedDate.getTime(),
     )
     if (exception) return !exception.isOpen
 
-    // 3. Check Operating Days
     const dayOfWeek = date.getDay()
     const standardDay = operatingDays.find((d) => d.dayOfWeek === dayOfWeek)
     if (standardDay) return !standardDay.isOpen
@@ -263,6 +282,16 @@ const ServiceBookingSheet = ({
           </Button>
         </div>
       </SheetContent>
+
+      <PaymentCheckoutDialog
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        amount={paymentData?.amount || 0}
+        serviceName={paymentData?.serviceName || ""}
+        itemId={paymentData?.itemId || ""}
+        type={paymentData?.type || "SERVICE"}
+        metadata={paymentData?.metadata}
+      />
     </Sheet>
   )
 }

@@ -9,6 +9,7 @@ import { useSession } from "next-auth/react"
 import { MinusIcon, PlusIcon } from "lucide-react"
 import SignInDialog from "./sign-in-dialog"
 import { Dialog, DialogContent } from "./ui/dialog"
+import PaymentCheckoutDialog from "./payment-checkout-dialog"
 
 interface ProductPurchaseSheetProps {
   product: {
@@ -32,6 +33,14 @@ const ProductPurchaseSheet = ({
   const [loading, setLoading] = useState(false)
   const [isSignInDialogOpen, setIsSignInDialogOpen] = useState(false)
 
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
+  const [paymentData, setPaymentData] = useState<{
+    amount: number
+    serviceName: string
+    itemId: string
+    type: "SERVICE" | "PRODUCT"
+  } | null>(null)
+
   const handleIncreaseQuantity = () => setQuantity((prev) => prev + 1)
   const handleDecreaseQuantity = () =>
     setQuantity((prev) => (prev > 1 ? prev - 1 : 1))
@@ -54,10 +63,26 @@ const ProductPurchaseSheet = ({
         }),
       })
 
-      const { url } = await response.json()
+      if (!response.ok) {
+        throw new Error("Erro ao iniciar checkout")
+      }
 
-      if (url) {
-        window.location.href = url
+      const checkoutResponse = await response.json()
+
+      // Se for Mercado Pago ou Mock, abrimos nosso modal profissional
+      if (checkoutResponse.action === "OPEN_MODAL" || checkoutResponse.isMock) {
+        setPaymentData({
+          amount: Number(checkoutResponse.amount * quantity),
+          serviceName: checkoutResponse.name,
+          itemId: product.id,
+          type: "PRODUCT",
+        })
+        setIsPaymentModalOpen(true)
+        return
+      }
+
+      if (checkoutResponse.url) {
+        window.location.href = checkoutResponse.url
       }
     } catch (error) {
       console.error("Error initiating checkout:", error)
@@ -144,6 +169,15 @@ const ProductPurchaseSheet = ({
           <SignInDialog />
         </DialogContent>
       </Dialog>
+
+      <PaymentCheckoutDialog
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        amount={paymentData?.amount || 0}
+        serviceName={paymentData?.serviceName || ""}
+        itemId={paymentData?.itemId || ""}
+        type={paymentData?.type || "PRODUCT"}
+      />
     </>
   )
 }

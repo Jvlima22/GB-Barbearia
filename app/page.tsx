@@ -132,7 +132,7 @@ const Home = async () => {
           </div>
 
           {/* DIREITA - RECOMENDADOS */}
-          <div className="flex-1 min-w-0">
+          <div className="min-w-0 flex-1">
             <h2 className="mb-3 mt-6 text-xs font-bold uppercase text-white lg:mt-[-24px]">
               Recomendados
             </h2>
@@ -154,7 +154,12 @@ const Home = async () => {
           {popularServices.map((service: any) => (
             <ServiceItem
               key={service.id}
-              service={{ ...service, price: Number(service.price) as any }}
+              service={JSON.parse(
+                JSON.stringify({
+                  ...service,
+                  price: Number(service.price),
+                }),
+              )}
             />
           ))}
         </ScrollableContainer>
@@ -166,7 +171,12 @@ const Home = async () => {
           {popularProducts.map((product: any) => (
             <ProductItem
               key={product.id}
-              product={{ ...product, price: Number(product.price) as any }}
+              product={JSON.parse(
+                JSON.stringify({
+                  ...product,
+                  price: Number(product.price),
+                }),
+              )}
             />
           ))}
         </ScrollableContainer>

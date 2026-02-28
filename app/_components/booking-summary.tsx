@@ -63,6 +63,21 @@ const BookingSummary = ({
             </Badge>
           )}
         </div>
+        {(service as any)?.paymentStatus && (
+          <div className="flex items-center justify-between border-t border-white/5 pt-2">
+            <h2 className="text-sm font-semibold italic text-gray-400">
+              Pagamento
+            </h2>
+            <Badge
+              className={`w-fit font-black ${(service as any).paymentStatus === "SUCCEEDED" ? "border-green-600/30 bg-green-600/20 text-green-400" : "border-orange-600/30 bg-orange-600/20 text-orange-400"}`}
+              variant="outline"
+            >
+              {(service as any).paymentStatus === "SUCCEEDED"
+                ? "PAGO"
+                : "PENDENTE"}
+            </Badge>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

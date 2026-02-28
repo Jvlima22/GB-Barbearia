@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { Button } from "@/app/_components/ui/button"
 import ServicesTable from "./services-table"
 import ProductsTable from "./products-table"
@@ -40,6 +41,9 @@ const ManagementTabs = ({
   banks,
   children,
 }: ManagementTabsProps) => {
+  const searchParams = useSearchParams()
+  const initialTab = searchParams.get("tab") as any
+
   const [activeTab, setActiveTab] = useState<
     | "dashboard"
     | "services"
@@ -48,7 +52,24 @@ const ManagementTabs = ({
     | "settings"
     | "operating-hours"
     | "bancos"
-  >("dashboard")
+  >(initialTab || "dashboard")
+
+  // Update tab if URL changes (optional but good for UX)
+  useEffect(() => {
+    const tab = searchParams.get("tab")
+    if (
+      tab &&
+      (tab === "bancos" ||
+        tab === "services" ||
+        tab === "products" ||
+        tab === "combos" ||
+        tab === "settings" ||
+        tab === "operating-hours" ||
+        tab === "dashboard")
+    ) {
+      setActiveTab(tab as any)
+    }
+  }, [searchParams])
 
   return (
     <div className="flex flex-col gap-6">
