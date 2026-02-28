@@ -4,6 +4,7 @@ import { db } from "@/app/_lib/prisma"
 import { decrypt } from "@/app/_lib/encryption"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/_lib/auth"
+import crypto from "crypto"
 
 export async function createMercadoPagoPayment(params: {
   itemId: string
@@ -75,11 +76,18 @@ export async function createMercadoPagoPayment(params: {
     )
   }
 
-  const appUrl =
+  let appUrl = (
     process.env.NEXT_PUBLIC_APP_URL ||
     process.env.NEXT_PUBLIC_APP_URL_LOCAL ||
     "http://localhost:3000"
-  const notificationUrl = `${appUrl}/api/webhooks/mercadopago`
+  ).replace(/\/$/, "")
+
+  // Mercado Pago não aceita localhost na notification_url e exige HTTPS em produção
+  const isLocal = appUrl.includes("localhost")
+  const notificationUrl = isLocal
+    ? undefined
+    : `${appUrl}/api/webhooks/mercadopago`
+
   const externalReference = `${(session.user as any).id}_${params.itemId}_${Date.now()}`
 
   // 3. Create Payment based on method
@@ -101,7 +109,7 @@ export async function createMercadoPagoPayment(params: {
           last_name: session.user.name?.split(" ").slice(1).join(" ") || "TGL",
         },
         external_reference: externalReference,
-        notification_url: notificationUrl,
+        ...(notificationUrl && { notification_url: notificationUrl }),
         metadata: {
           user_id: (session.user as any).id,
           item_id: params.itemId,
@@ -154,7 +162,7 @@ export async function createMercadoPagoPayment(params: {
           },
           auto_return: "approved",
           external_reference: externalReference,
-          notification_url: notificationUrl,
+          ...(notificationUrl && { notification_url: notificationUrl }),
         }),
       },
     )

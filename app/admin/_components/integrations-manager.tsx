@@ -487,6 +487,9 @@ const IntegrationsManager = ({ banks }: IntegrationsManagerProps) => {
             <DialogTitle className="text-white">
               Como configurar {selectedBank?.name}?
             </DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Siga os passos abaixo para obter suas credenciais.
+            </DialogDescription>
           </DialogHeader>
           <div className="my-2 flex flex-col gap-3 rounded-md border border-primary/20 bg-primary/10 p-4 text-sm text-gray-300">
             <ul className="list-inside list-decimal space-y-2">

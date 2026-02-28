@@ -78,11 +78,11 @@ export async function POST(req: Request) {
       description = product.description
     }
 
-    const appUrl =
-      process.env.NODE_ENV === "development"
-        ? process.env.NEXT_PUBLIC_APP_URL_LOCAL || "http://localhost:3000"
-        : process.env.NEXT_PUBLIC_APP_URL_PRODUCTION ||
-          "https://sua-barbearia.com"
+    const appUrl = (
+      process.env.NEXT_PUBLIC_APP_URL ||
+      process.env.NEXT_PUBLIC_APP_URL_LOCAL ||
+      "http://localhost:3000"
+    ).replace(/\/$/, "")
 
     // 2. BUSCAR O GATEWAY BANCÁRIO DEFINIDO NO PAINEL
     const activeCredential = await db.bankCredential.findFirst({

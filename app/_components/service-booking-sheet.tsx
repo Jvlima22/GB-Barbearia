@@ -2,7 +2,13 @@
 
 import { setHours, setMinutes, startOfDay } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "./ui/sheet"
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "./ui/sheet"
 import { Button } from "./ui/button"
 import { Calendar } from "./ui/calendar"
 import { useState, useEffect } from "react"
@@ -180,10 +186,11 @@ const ServiceBookingSheet = ({
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent className="w-[90%] overflow-y-auto border-white/10 bg-[#121212] sm:w-[400px]">
-        <SheetHeader>
-          <SheetTitle className="text-left text-white">
-            Agendar {service.name.toLowerCase()}
-          </SheetTitle>
+        <SheetHeader className="border-b border-solid border-secondary px-5 py-6 text-left">
+          <SheetTitle>Agendar {service.name}</SheetTitle>
+          <SheetDescription>
+            Escolha a data e o horário desejado para o seu atendimento.
+          </SheetDescription>
         </SheetHeader>
 
         <div className="space-y-6 py-6">

@@ -1,6 +1,12 @@
 "use client"
 
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "./ui/sheet"
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "./ui/sheet"
 import { Button } from "./ui/button"
 import { useState } from "react"
 import Image from "next/image"
@@ -96,10 +102,13 @@ const ProductPurchaseSheet = ({
     <>
       <Sheet open={isOpen} onOpenChange={onClose}>
         <SheetContent className="w-[90%] border-l border-white/10 bg-[#121212] sm:w-[400px]">
-          <SheetHeader>
+          <SheetHeader className="border-b border-solid border-secondary px-5 py-6 text-left">
             <SheetTitle className="text-left text-white">
               Comprar {product.name}
             </SheetTitle>
+            <SheetDescription className="text-gray-400">
+              Defina a quantidade e finalize sua compra com segurança.
+            </SheetDescription>
           </SheetHeader>
 
           <div className="flex flex-col gap-6 py-6">
