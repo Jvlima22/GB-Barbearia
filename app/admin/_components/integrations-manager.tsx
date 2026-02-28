@@ -179,7 +179,10 @@ const IntegrationsManager = ({ banks }: IntegrationsManagerProps) => {
     setClientId("")
     setClientSecret("")
     setPublicKey("")
-    setEnvironment(bank.credentials?.[0]?.environment || "PRODUCTION")
+    const creds = Array.isArray(bank.credentials)
+      ? bank.credentials[0]
+      : bank.credentials
+    setEnvironment(creds?.environment || "PRODUCTION")
     setIsDialogOpen(true)
   }
 
@@ -224,8 +227,11 @@ const IntegrationsManager = ({ banks }: IntegrationsManagerProps) => {
   }
 
   const handleToggle = async (bank: any) => {
+    const creds = Array.isArray(bank.credentials)
+      ? bank.credentials[0]
+      : bank.credentials
     try {
-      const currentStatus = bank.credentials[0]?.isEnabled
+      const currentStatus = creds?.isEnabled
       setIsLoading(true)
       await toggleBankCredentialStatus(bank.id, !currentStatus)
       toast.success(
@@ -293,7 +299,10 @@ const IntegrationsManager = ({ banks }: IntegrationsManagerProps) => {
         }
       >
         {banks.map((bank) => {
-          const hasCredentials = bank.credentials && bank.credentials.length > 0
+          const credentials = Array.isArray(bank.credentials)
+            ? bank.credentials[0]
+            : bank.credentials
+          const hasCredentials = !!credentials
 
           if (viewMode === "list") {
             return (
@@ -321,7 +330,7 @@ const IntegrationsManager = ({ banks }: IntegrationsManagerProps) => {
                     </div>
                     {hasCredentials && (
                       <p className="truncate text-[9px] text-gray-400 lg:text-sm">
-                        Conectado em {bank.credentials[0]?.environment}
+                        Conectado em {credentials?.environment}
                       </p>
                     )}
                   </div>
@@ -338,11 +347,11 @@ const IntegrationsManager = ({ banks }: IntegrationsManagerProps) => {
                         <UnlinkIcon className="h-4 w-4" />
                       </Button>
                       <div
-                        className={`relative h-5 w-10 cursor-pointer rounded-full transition-colors ${bank.credentials[0]?.isEnabled ? "bg-green-500" : "bg-gray-600"}`}
+                        className={`relative h-5 w-10 cursor-pointer rounded-full transition-colors ${credentials?.isEnabled ? "bg-green-500" : "bg-gray-600"}`}
                         onClick={() => handleToggle(bank)}
                       >
                         <div
-                          className={`absolute top-1 h-3 w-3 rounded-full bg-white transition-all ${bank.credentials[0]?.isEnabled ? "right-1" : "left-1"}`}
+                          className={`absolute top-1 h-3 w-3 rounded-full bg-white transition-all ${credentials?.isEnabled ? "right-1" : "left-1"}`}
                         />
                       </div>
                     </div>
@@ -389,9 +398,7 @@ const IntegrationsManager = ({ banks }: IntegrationsManagerProps) => {
                 )}
               </div>
               <p className="min-h-[20px] text-xs text-gray-400 lg:min-h-[40px] lg:text-sm">
-                {hasCredentials
-                  ? `Ambiente: ${bank.credentials[0]?.environment}`
-                  : ""}
+                {hasCredentials ? `Ambiente: ${credentials?.environment}` : ""}
               </p>
               {bank.isActive ? (
                 hasCredentials ? (
@@ -408,14 +415,14 @@ const IntegrationsManager = ({ banks }: IntegrationsManagerProps) => {
                       </Button>
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-gray-400">
-                          {bank.credentials[0]?.isEnabled ? "Ativo" : "Off"}
+                          {credentials?.isEnabled ? "Ativo" : "Off"}
                         </span>
                         <div
-                          className={`relative h-6 w-11 cursor-pointer rounded-full transition-colors ${bank.credentials[0]?.isEnabled ? "bg-green-500" : "bg-gray-600"}`}
+                          className={`relative h-6 w-11 cursor-pointer rounded-full transition-colors ${credentials?.isEnabled ? "bg-green-500" : "bg-gray-600"}`}
                           onClick={() => handleToggle(bank)}
                         >
                           <div
-                            className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-all ${bank.credentials[0]?.isEnabled ? "right-1" : "left-1"}`}
+                            className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-all ${credentials?.isEnabled ? "right-1" : "left-1"}`}
                           />
                         </div>
                       </div>
