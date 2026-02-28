@@ -75,6 +75,13 @@ export async function createMercadoPagoPayment(params: {
     )
   }
 
+  const appUrl =
+    process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.NEXT_PUBLIC_APP_URL_LOCAL ||
+    "http://localhost:3000"
+  const notificationUrl = `${appUrl}/api/webhooks/mercadopago`
+  const externalReference = `${(session.user as any).id}_${params.itemId}_${Date.now()}`
+
   // 3. Create Payment based on method
   if (params.method === "pix") {
     const response = await fetch("https://api.mercadopago.com/v1/payments", {
@@ -82,7 +89,7 @@ export async function createMercadoPagoPayment(params: {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
-        "X-Idempotency-Key": `${Date.now()}`,
+        "X-Idempotency-Key": crypto.randomUUID(),
       },
       body: JSON.stringify({
         transaction_amount: price,
@@ -93,6 +100,8 @@ export async function createMercadoPagoPayment(params: {
           first_name: session.user.name?.split(" ")[0] || "Cliente",
           last_name: session.user.name?.split(" ").slice(1).join(" ") || "TGL",
         },
+        external_reference: externalReference,
+        notification_url: notificationUrl,
         metadata: {
           user_id: (session.user as any).id,
           item_id: params.itemId,
@@ -119,8 +128,6 @@ export async function createMercadoPagoPayment(params: {
     }
   } else {
     // Para CARTÃO, usamos o Checkout Pro (Preference) para máxima profissionalismo e segurança
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
-
     const response = await fetch(
       "https://api.mercadopago.com/checkout/preferences",
       {
@@ -146,13 +153,17 @@ export async function createMercadoPagoPayment(params: {
             pending: `${appUrl}/bookings`,
           },
           auto_return: "approved",
-          external_reference: `${(session.user as any).id}_${params.itemId}`,
+          external_reference: externalReference,
+          notification_url: notificationUrl,
         }),
       },
     )
 
     const data = await response.json()
-    if (!response.ok) throw new Error("Erro ao gerar link de cartão")
+    if (!response.ok) {
+      console.error("[MP Preference Error]:", data)
+      throw new Error("Erro ao gerar link de cartão")
+    }
 
     return {
       id: data.id,

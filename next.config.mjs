@@ -5,6 +5,15 @@ const nextConfig = {
       {
         hostname: "utfs.io",
       },
+      {
+        hostname: "logodownload.org",
+      },
+      {
+        hostname: "cdn.shopify.com",
+      },
+      {
+        hostname: "www.pngall.com",
+      },
     ],
   },
 }

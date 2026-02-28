@@ -51,11 +51,12 @@ const getBankHelpInstructions = (provider: string) => {
       return {
         steps: [
           "Acesse o Mercado Pago Developers (mercadopago.com.br/developers).",
-          "Vá no menu superior 'Suas integrações'.",
-          "Acesse a seção 'Credenciais de Produção'.",
-          "Copie o 'Acess Token' (Token de Produção - APP_USR-...) e insira abaixo no campo 'Access Token'.",
+          "Vá no menu superior 'Suas integrações' e escolha sua aplicação.",
+          "Para TESTES: Use o 'Access Token' da seção 'Credenciais de teste'.",
+          "Para PRODUÇÃO: Use o 'Access Token' da seção 'Credenciais de produção' (requer homologação).",
+          "Configure as 'Back URLs' no painel se quiser redirecionamento automático absoluto.",
         ],
-        link: "https://www.mercadopago.com.br/developers/",
+        link: "https://www.mercadopago.com.br/developers/panel/applications",
       }
     case "PICPAY":
       return {
@@ -108,12 +109,16 @@ const IntegrationsManager = ({ banks }: IntegrationsManagerProps) => {
   const [clientId, setClientId] = useState("")
   const [clientSecret, setClientSecret] = useState("")
   const [publicKey, setPublicKey] = useState("")
+  const [environment, setEnvironment] = useState<"SANDBOX" | "PRODUCTION">(
+    "SANDBOX",
+  )
 
   const handleOpenBank = (bank: any) => {
     setSelectedBank(bank)
     setClientId("")
     setClientSecret("")
     setPublicKey("")
+    setEnvironment(bank.credentials?.[0]?.environment || "SANDBOX")
     setIsDialogOpen(true)
   }
 
@@ -144,7 +149,7 @@ const IntegrationsManager = ({ banks }: IntegrationsManagerProps) => {
         clientId: cleanClientId,
         clientSecret: cleanClientSecret,
         publicKey: cleanPublicKey,
-        environment: "PRODUCTION",
+        environment,
       })
       toast.success("Conectado com sucesso!")
       setIsDialogOpen(false)
@@ -400,42 +405,64 @@ const IntegrationsManager = ({ banks }: IntegrationsManagerProps) => {
               </Button>
             </div>
             <DialogDescription className="text-gray-400">
-              Para o Mercado Pago, apenas o seu **Access Token** de Produção é
-              obrigatório.
+              Selecione o ambiente e insira as credenciais obtidas no painel de
+              desenvolvedor.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-4 py-4">
-            {selectedBank?.provider !== "MERCADO_PAGO" && (
+          <div className="flex flex-col gap-6 py-4">
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-bold uppercase tracking-widest text-gray-500">
+                Ambiente de Execução
+              </label>
+              <div className="flex w-full rounded-xl border border-white/10 bg-[#222] p-1">
+                <button
+                  onClick={() => setEnvironment("SANDBOX")}
+                  className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all ${environment === "SANDBOX" ? "bg-primary text-white shadow-lg" : "text-gray-500 hover:text-white"}`}
+                >
+                  SANDBOX (Testes)
+                </button>
+                <button
+                  onClick={() => setEnvironment("PRODUCTION")}
+                  className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all ${environment === "PRODUCTION" ? "bg-green-600 text-white shadow-lg" : "text-gray-500 hover:text-white"}`}
+                >
+                  PRODUÇÃO (Real)
+                </button>
+              </div>
+            </div>
+
+            <div className="grid gap-4">
+              {selectedBank?.provider !== "MERCADO_PAGO" && (
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-medium text-white">
+                    Client ID
+                  </label>
+                  <Input
+                    placeholder="Insira o Client ID"
+                    value={clientId}
+                    onChange={(e) => setClientId(e.target.value)}
+                    className="border-white/10 bg-[#222]"
+                  />
+                </div>
+              )}
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium text-white">
-                  Client ID
+                  {selectedBank?.provider === "MERCADO_PAGO"
+                    ? "Access Token (APP_USR-...)"
+                    : "Client Secret"}
                 </label>
                 <Input
-                  placeholder="Insira o Client ID"
-                  value={clientId}
-                  onChange={(e) => setClientId(e.target.value)}
+                  placeholder={
+                    selectedBank?.provider === "MERCADO_PAGO"
+                      ? "Copie o Access Token do Dashboard"
+                      : "Insira o Client Secret"
+                  }
+                  type="password"
+                  value={clientSecret}
+                  onChange={(e) => setClientSecret(e.target.value)}
                   className="border-white/10 bg-[#222]"
                 />
               </div>
-            )}
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-white">
-                {selectedBank?.provider === "MERCADO_PAGO"
-                  ? "Access Token (APP_USR-...)"
-                  : "Client Secret"}
-              </label>
-              <Input
-                placeholder={
-                  selectedBank?.provider === "MERCADO_PAGO"
-                    ? "Copie o Access Token do Dashboard"
-                    : "Insira o Client Secret"
-                }
-                type="password"
-                value={clientSecret}
-                onChange={(e) => setClientSecret(e.target.value)}
-                className="border-white/10 bg-[#222]"
-              />
             </div>
           </div>
 
