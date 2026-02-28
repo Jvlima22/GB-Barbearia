@@ -60,15 +60,14 @@ const PaymentCheckoutDialog = ({
 
       if (selectedMethod === "pix" && result.qrCode) {
         setPixData({ qrCode: result.qrCode, base64: result.qrCodeBase64 })
+        setLoading(false)
       } else if (selectedMethod === "card" && result.url) {
-        setLoading(true)
+        setLoading(true) // Mantém o spinner até a mudança de página
         window.location.href = result.url
-        return
       }
     } catch (error: any) {
       toast.error(error.message || "Erro ao processar pagamento")
       setMethod(null)
-    } finally {
       setLoading(false)
     }
   }
@@ -98,7 +97,7 @@ const PaymentCheckoutDialog = ({
           </DialogTitle>
           <DialogDescription className="text-gray-400">
             Selecione como deseja pagar pelo serviço{" "}
-            <strong className="text-primary">{serviceName}</strong>.
+            <strong className="text-[#00FF00]">{serviceName}</strong>.
           </DialogDescription>
         </DialogHeader>
 

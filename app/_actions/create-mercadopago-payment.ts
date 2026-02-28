@@ -109,6 +109,13 @@ export async function createMercadoPagoPayment(params: {
           last_name: session.user.name?.split(" ").slice(1).join(" ") || "TGL",
         },
         external_reference: externalReference,
+        metadata: {
+          user_id: (session.user as any).id,
+          item_id: params.itemId,
+          type: params.type,
+          date: params.metadata?.date,
+          ...params.metadata,
+        },
       }),
     })
 
@@ -116,6 +123,11 @@ export async function createMercadoPagoPayment(params: {
 
     if (!response.ok) {
       console.error("[MP PIX Error]:", data)
+      if (data.message?.includes("Collector user without key enabled")) {
+        throw new Error(
+          "Sua conta do Mercado Pago não possui uma Chave PIX cadastrada. Por favor, cadastre uma chave (E-mail, CPF ou Aleatória) no Mercado Pago para aceitar PIX.",
+        )
+      }
       throw new Error(data.message || "Erro ao gerar PIX")
     }
 

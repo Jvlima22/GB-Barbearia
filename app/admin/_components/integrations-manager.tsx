@@ -30,17 +30,39 @@ const getBankHelpInstructions = (provider: string) => {
     case "ITAU":
       return {
         steps: [
-          "Acesse o portal Itaú for Developers (devportal.itau.com.br).",
+          <>
+            Acesse o portal Itaú for Developers (
+            <a
+              href="https://devportal.itau.com.br"
+              target="_blank"
+              rel="noreferrer"
+              className="text-blue-500 hover:underline"
+            >
+              devportal.itau.com.br
+            </a>
+            ).
+          </>,
           "Faça login com os dados da conta Empresas do titular.",
-          "Crie uma nova 'Aplicação' na seção de Pix ou Cobrança.",
-          "Copie o 'Client ID' e 'Client Secret' (Token Temporário) gerados e cole aqui.",
+          "Crie uma nova &apos;Aplicação&apos; na seção de Pix ou Cobrança.",
+          "Copie o &apos;Client ID&apos; e &apos;Client Secret&apos; (Token Temporário) gerados e cole aqui.",
         ],
         link: "https://devportal.itau.com.br/",
       }
     case "BRADESCO":
       return {
         steps: [
-          "Acesse o portal Bradesco Developers (api.bradesco).",
+          <>
+            Acesse o portal Bradesco Developers (
+            <a
+              href="https://api.bradesco"
+              target="_blank"
+              rel="noreferrer"
+              className="text-blue-500 hover:underline"
+            >
+              api.bradesco
+            </a>
+            ).
+          </>,
           "Selecione a API Pix ou Boleto no Catálogo de APIs.",
           "Siga o fluxo de geração de chaves e certificados de produção.",
           "Faça o upload/cole o arquivo .pem gerado aqui para efetivar as cobranças.",
@@ -50,18 +72,57 @@ const getBankHelpInstructions = (provider: string) => {
     case "MERCADO_PAGO":
       return {
         steps: [
-          "Acesse o Mercado Pago Developers (mercadopago.com.br/developers).",
-          "Vá no menu superior 'Suas integrações' e escolha sua aplicação.",
-          "Para TESTES: Use o 'Access Token' da seção 'Credenciais de teste'.",
-          "Para PRODUÇÃO: Use o 'Access Token' da seção 'Credenciais de produção' (requer homologação).",
-          "Configure as 'Back URLs' no painel se quiser redirecionamento automático absoluto.",
+          <>
+            Acesse:{" "}
+            <a
+              href="https://www.mercadopago.com.br/developers"
+              target="_blank"
+              rel="noreferrer"
+              className="text-blue-500 hover:underline"
+            >
+              mercadopago.com.br/developers
+            </a>{" "}
+            e faça login. No menu superior, clique em &apos;Suas
+            integrações&apos;.
+          </>,
+          "Clique no botão azul &apos;Criar aplicação&apos;.",
+          "Siga os 4 passos: Dê um &apos;Nome&apos;, escolha &apos;Pagamentos online&apos; > &apos;Com desenvolvimento próprio&apos; > &apos;Checkout Pro&apos;, e confirme a criação.",
+          "Na sua nova aplicação, acesse o menu lateral esquerdo &apos;PRODUÇÃO &gt; Credenciais de produção&apos;.",
+          <>
+            Preencha o &apos;Setor&apos; (Ex: Beleza, estética e saúde), e na
+            &apos;URL do site&apos; OBRIGATORIAMENTE coloque:{" "}
+            <a
+              href="https://gb-barbearia.vercel.app/"
+              target="_blank"
+              rel="noreferrer"
+              className="font-semibold text-blue-500 hover:underline"
+            >
+              https://gb-barbearia.vercel.app/
+            </a>{" "}
+            (se for diferente não irá funcionar).
+          </>,
+          "Clique no botão azul &apos;Ativar credenciais de produção&apos;.",
+          "Pronto! Agora copie apenas o seu &apos;Access Token&apos; (começa com APP_USR...) clicando no pequeno ícone de cópia ao lado dele e cole a chave no campo abaixo.",
         ],
+        alert:
+          "⚠️ ATENÇÃO PIX: O QR Code só será gerado se a sua conta do Mercado Pago possuir uma chave PIX cadastrada e ativa.",
         link: "https://www.mercadopago.com.br/developers/panel/applications",
       }
     case "PICPAY":
       return {
         steps: [
-          "Acesse o Painel Lojista do PicPay (painel-lojista.picpay.com).",
+          <>
+            Acesse o Painel Lojista do PicPay (
+            <a
+              href="https://painel-lojista.picpay.com"
+              target="_blank"
+              rel="noreferrer"
+              className="text-blue-500 hover:underline"
+            >
+              painel-lojista.picpay.com
+            </a>
+            ).
+          </>,
           "Vá no menu Configurações > Integrações e APIs.",
           "Encontre a opção de Gerar Tokens (x-seller-token).",
           "Copie a chave ativa e cole aqui para habilitar sua carteira.",
@@ -72,13 +133,13 @@ const getBankHelpInstructions = (provider: string) => {
       return {
         steps: [
           "Acesse o painel de desenvolvedor do seu Gateway de Pagamento (ex: Asaas, Pagar.me, Vindi).",
-          "Procure pelo serviço chamado 'Webhooks' ou 'Notificações de Pagamentos'.",
+          "Procure pelo serviço chamado &apos;Webhooks&apos; ou &apos;Notificações de Pagamentos&apos;.",
           "Adicione a URL do seu sistema na plataforma para os avisos acontecerem de forma automática.",
         ],
         link: "",
       }
     default:
-      return { steps: [], link: "" }
+      return { steps: [] as React.ReactNode[], link: "" }
   }
 }
 
@@ -110,7 +171,7 @@ const IntegrationsManager = ({ banks }: IntegrationsManagerProps) => {
   const [clientSecret, setClientSecret] = useState("")
   const [publicKey, setPublicKey] = useState("")
   const [environment, setEnvironment] = useState<"SANDBOX" | "PRODUCTION">(
-    "SANDBOX",
+    "PRODUCTION",
   )
 
   const handleOpenBank = (bank: any) => {
@@ -118,7 +179,7 @@ const IntegrationsManager = ({ banks }: IntegrationsManagerProps) => {
     setClientId("")
     setClientSecret("")
     setPublicKey("")
-    setEnvironment(bank.credentials?.[0]?.environment || "SANDBOX")
+    setEnvironment(bank.credentials?.[0]?.environment || "PRODUCTION")
     setIsDialogOpen(true)
   }
 
@@ -411,26 +472,6 @@ const IntegrationsManager = ({ banks }: IntegrationsManagerProps) => {
           </DialogHeader>
 
           <div className="flex flex-col gap-6 py-4">
-            <div className="flex flex-col gap-2">
-              <label className="text-xs font-bold uppercase tracking-widest text-gray-500">
-                Ambiente de Execução
-              </label>
-              <div className="flex w-full rounded-xl border border-white/10 bg-[#222] p-1">
-                <button
-                  onClick={() => setEnvironment("SANDBOX")}
-                  className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all ${environment === "SANDBOX" ? "bg-primary text-white shadow-lg" : "text-gray-500 hover:text-white"}`}
-                >
-                  SANDBOX (Testes)
-                </button>
-                <button
-                  onClick={() => setEnvironment("PRODUCTION")}
-                  className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all ${environment === "PRODUCTION" ? "bg-green-600 text-white shadow-lg" : "text-gray-500 hover:text-white"}`}
-                >
-                  PRODUÇÃO (Real)
-                </button>
-              </div>
-            </div>
-
             <div className="grid gap-4">
               {selectedBank?.provider !== "MERCADO_PAGO" && (
                 <div className="flex flex-col gap-2">
@@ -448,13 +489,13 @@ const IntegrationsManager = ({ banks }: IntegrationsManagerProps) => {
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium text-white">
                   {selectedBank?.provider === "MERCADO_PAGO"
-                    ? "Access Token (APP_USR-...)"
+                    ? "Access Token"
                     : "Client Secret"}
                 </label>
                 <Input
                   placeholder={
                     selectedBank?.provider === "MERCADO_PAGO"
-                      ? "Copie o Access Token do Dashboard"
+                      ? "Copie o Access Token e cole aqui"
                       : "Insira o Client Secret"
                   }
                   type="password"
@@ -491,15 +532,21 @@ const IntegrationsManager = ({ banks }: IntegrationsManagerProps) => {
               Siga os passos abaixo para obter suas credenciais.
             </DialogDescription>
           </DialogHeader>
-          <div className="my-2 flex flex-col gap-3 rounded-md border border-primary/20 bg-primary/10 p-4 text-sm text-gray-300">
-            <ul className="list-inside list-decimal space-y-2">
+          <div className="my-2 flex flex-col gap-3 rounded-md border border-primary/20 bg-primary/10 p-5 text-sm text-gray-300">
+            <ul className="list-inside list-decimal space-y-4">
               {selectedBank &&
                 getBankHelpInstructions(selectedBank.provider).steps.map(
                   (step, i) => <li key={i}>{step}</li>,
                 )}
             </ul>
           </div>
-          <div className="flex justify-end">
+          {selectedBank &&
+            getBankHelpInstructions(selectedBank.provider).alert && (
+              <div className="mt-2 rounded-md border border-yellow-500/20 bg-yellow-500/10 p-3 text-xs font-semibold text-yellow-500">
+                {getBankHelpInstructions(selectedBank.provider).alert}
+              </div>
+            )}
+          <div className="mt-2 flex justify-end">
             <Button onClick={() => setIsHelpDialogOpen(false)}>Entendi</Button>
           </div>
         </DialogContent>
